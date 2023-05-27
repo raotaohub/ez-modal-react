@@ -18,7 +18,7 @@ function App() {
         justifyContent: 'center',
       }}
     >
-      <h2> Easy Modal React </h2>
+      <h2> Ez Modal React </h2>
       <div>
         <HappyModal></HappyModal>
         <RefCompDemo></RefCompDemo>
@@ -30,11 +30,9 @@ function App() {
 
 ReactDOM.render(
   <StrictMode>
-    {/* <EasyModal.ConfigProvider resolveOnHide={false} removeOnHide={false}> */}
     <EasyModal.Provider>
       <App />
     </EasyModal.Provider>
-    {/* </EasyModal.ConfigProvider> */}
   </StrictMode>,
   document.getElementById('root') as HTMLElement,
 );

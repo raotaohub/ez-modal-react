@@ -1,5 +1,5 @@
 {
-  "name": "easy-modal-react",
+  "name": "ez-modal-react",
   "version": "0.0.1",
   "description": "a easy modal state manager for React.",
   "keywords": [
@@ -8,10 +8,10 @@
     "modal manager",
     "modal state manager"
   ],
-  "homepage": "https://github.com/raotaohub/easy-modal-react/blob/main/LICENSE",
+  "homepage": "https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/raotaohub/easy-modal-react"
+    "url": "https://github.com/raotaohub/ez-modal-react"
   },
   "license": "MIT",
   "author": {
@@ -30,7 +30,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "/dist"
   ],
   "scripts": {
     "build": "tsup src/index.tsx",
@@ -76,5 +76,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "title": "Easy Modal React"
+  "title": "Ez Modal React"
 }

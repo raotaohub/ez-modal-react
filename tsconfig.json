@@ -13,6 +13,6 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "types": ["vite-plugin-svgr/client", "vite/client"]
+    "types": ["vite/client"]
   }
 }
