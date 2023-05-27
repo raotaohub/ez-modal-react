@@ -75,4 +75,5 @@ export type {
   ModalResolveType,
   ModalProps,
   BuildFnInterfaceCheck,
+  InnerModalProps,
 };
