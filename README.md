@@ -18,10 +18,10 @@ This is a easy-to-use modal state management of React. It use React's context.
 
 ```shell
 # with yarn
-yarn add @ez-modal-react
+yarn add ez-modal-react
 
 # or with npm
-npm install @ez-modal-react
+npm install ez-modal-react
 ```
 
 ## 🚀 Examples
@@ -29,7 +29,7 @@ npm install @ez-modal-react
 1. **use EasyModal Provider**
 
 ```tsx
-import EasyModal from '@ez-modal-react';
+import EasyModal from 'ez-modal-react';
 
 function App() {/* ... */}
 
@@ -52,7 +52,7 @@ export const MyModal = EasyModal.create(Info);
 3. **anywhere use it**
 
 ```tsx
-import easyModal from '@ez-modal-react';
+import easyModal from 'ez-modal-react';
 import MyModal from './MyModal';
 
 EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
@@ -63,7 +63,7 @@ EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
 4. **Modal Component use method provided**
 
 ```tsx
-import EasyModal from '@ez-modal-react';
+import EasyModal from 'ez-modal-react';
 import { Info } from './Info';
 
 export const Info = EasyModal.create((props) => {
@@ -86,7 +86,7 @@ export const Info = EasyModal.create((props) => {
 Your Component Props should **extends InnerModalProps**,to enable it to derive the correct return value type
 
 ```diff
-import EasyModal, { InnerModalProps } from '@ez-modal-react';
+import EasyModal, { InnerModalProps } from 'ez-modal-react';
 
 + interface IProps extends InnerModalProps<'modal'/* here*/> {
 +   age: number;

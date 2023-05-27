@@ -18,10 +18,10 @@
 
 ```shell
 # with yarn
-yarn add @ez-modal-react
+yarn add ez-modal-react
 
 # or with npm
-npm install @ez-modal-react
+npm install ez-modal-react
 ```
 
 ## 🚀 使用方式
@@ -29,7 +29,7 @@ npm install @ez-modal-react
 1. **引入 EasyModal 使用 Provider**
 
 ```tsx
-import EasyModal from '@ez-modal-react';
+import EasyModal from 'ez-modal-react';
 
 function App() {/* ... */}
 
@@ -53,7 +53,7 @@ export const Info = EasyModal.create(Info);
 - 调用 EasyModal.show，传入创建好的组件，打开弹窗
 
 ```tsx
-import EasyModal from '@ez-modal-react';
+import EasyModal from 'ez-modal-react';
 import { Info } from './Info';
 
 EasyModal.show(Info, { name: 'foo' }).then((resolve) => {
@@ -64,7 +64,7 @@ EasyModal.show(Info, { name: 'foo' }).then((resolve) => {
 4. **组件中使用 EazyMdaol 提供的方法**
 
 ```tsx
-import EasyModal from '@ez-modal-react';
+import EasyModal from 'ez-modal-react';
 import { Info } from './Info';
 
 export const Info = EasyModal.create((props) => {
@@ -87,7 +87,7 @@ export const Info = EasyModal.create((props) => {
 - 组件使用的 props 类型需要继承 **InnerModalProps**,确保正确的推导。
 
 ```diff
-import EasyModal, { InnerModalProps } from '@ez-modal-react';
+import EasyModal, { InnerModalProps } from 'ez-modal-react';
 
 + interface IProps extends InnerModalProps<'modal'> /*传入返回值类型*/ {
 +   age: number;
@@ -123,7 +123,7 @@ EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
 - 如需获得 ts 推导需要给 `useModal`方法传入泛型参数
 
 ```diff
-import { useModal } from '@ez-modal-react';
+import { useModal } from 'ez-modal-react';
 
 + interface IProps extends InnerModalProps<'modal'>/* 指定返回值类型 */ {
 +   age: number;
