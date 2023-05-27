@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es6",
     "module": "esnext",
     "strict": true,
     "esModuleInterop": true,
@@ -12,6 +12,7 @@
     "noEmit": true,
     "outDir": "dist",
     "resolveJsonModule": true,
+    "declaration": true,
     "jsx": "react-jsx",
     "types": ["vite/client"]
   }

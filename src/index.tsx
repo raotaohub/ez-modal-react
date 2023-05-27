@@ -18,6 +18,8 @@ import {
   BuildFnInterfaceCheck,
 } from './type';
 
+export * from './type';
+
 const ModalContext = React.createContext<EasyModalItem[]>([]);
 const ModalIdContext = React.createContext<string | null>(null);
 
