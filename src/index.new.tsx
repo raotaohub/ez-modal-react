@@ -81,7 +81,7 @@ type ModalResolveType<V> = NoVoidValue<V> extends never
   ? Result
   : never;
 
-// Eazy Modal Inner Props
+// Easy Modal Inner Props
 export type InnerModalProps<V = never> = {
   id: string;
   visible: boolean;

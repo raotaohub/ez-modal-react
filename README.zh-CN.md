@@ -61,7 +61,7 @@ EasyModal.show(Info, { name: 'foo' }).then((resolve) => {
 });
 ```
 
-4. **组件中使用 EazyMdaol 提供的方法**
+4. **组件中使用 EasyMdaol 提供的方法**
 
 ```tsx
 import EasyModal from 'ez-modal-react';

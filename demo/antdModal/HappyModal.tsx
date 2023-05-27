@@ -17,7 +17,7 @@ export const Info = EasyModal.create((props: Props) => {
     modal.hide(remark); // ts(2345)
     modal.resolve(remark); // ts(2345)
 
-    message.success('eazy');
+    message.success('easy');
   };
 
   return (
