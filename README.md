@@ -17,7 +17,7 @@ This is a easy-to-use modal state management of React. It use React's context.
 
 ## 🔨 Let me see
 
-![ez-modal-scenario](assets\ez-modal-scenario.en.png)
+![ez-modal-scenario](/assets/ez-modal-scenario.en.png)
 
 ## 📦 install
 
