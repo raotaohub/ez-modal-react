@@ -13,6 +13,11 @@ This is a easy-to-use modal state management of React. It use React's context.
 3. Supports **<a href="#typeinfer" title="">return value type inference</a>**,elevate the development experience.
 4. Supports **>=React 16.8 version**.
 5. Supports **<a href="#config" title="">config</a>** (When modal is hidden, Whether to remove and resolve by default)
+6. Small size(~1.5kb after gzip)、easy access non-intrusive、support any UI library.
+
+## 🔨 Let me see
+
+![ez-modal-scenario](assets\ez-modal-scenario.en.png)
 
 ## 📦 install
 
@@ -182,6 +187,10 @@ type props | modal :
 >    > btw, That's exactly why I did this project, I like to use props directly, but nice-modal-react can't provide it
 
 <a href="#usehook" title="use hook">use hook</a>
+
+## 🎮 Codesandbox Demo
+
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);border-radius:2px;" width="800" height="450" src="https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1" allowfullscreen></iframe>
 
 ## ⭐ source of inspiration
 

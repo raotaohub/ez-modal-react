@@ -9,10 +9,15 @@
 ## ✨ 特性
 
 1. 基于 **Promise** ，使 Modal 和业务代码分离。
-2. 支持 **hook** 和 **props** 注入 2 种方式，获得状态和控制权.
-3. 支持 <a href="#typeinfer" title="使用返回值类型推导">返回值类型推导</a>，提高使用体验.
+2. 支持 **hook** 和 **props** 注入 2 种方式，获得状态和控制权。
+3. 支持 <a href="#typeinfer" title="使用返回值类型推导">返回值类型推导</a>，提高使用体验。
 4. 支持 **React 16.8** 以上版本。
 5. 支持 <a href="#config" title="配置hide时默认行为">配置</a>（隐藏弹窗时，是否默认销毁以及 resolve）。
+6. 体积小(~1.5kb gzip)、易接入、无入侵性、支持任意 UI 库。
+
+## 🔨 效果
+
+![ez-modal-scenario](assets\ez-modal-scenario.png)
 
 ## 📦 安装
 
@@ -197,6 +202,10 @@ type props | modal :
 >    > btw 这正是我做这个项目的原因，我喜欢直接使用 props。而是市面上如 nice-modal-react 无法提供。
 
 <a href="#usehook" title="使用 hook">使用 hook</a>
+
+## 🎮 Codesandbox Demo
+
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);border-radius:2px;" width="800" height="450" src="https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1" allowfullscreen></iframe>
 
 ## ⭐ 灵感来源
 
