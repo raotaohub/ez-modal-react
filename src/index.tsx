@@ -269,7 +269,7 @@ const EasyModalPlaceholder: React.FC = () => {
   );
 };
 
-const Provider: React.FC = ({ children }) => {
+const Provider: React.FC<Record<string, any>> = ({ children }) => {
   const arr = useReducer(reducer, []);
   const modals = arr[0];
   function innerDispatch<P, V>(action: EasyModalAction<P, V>) {
