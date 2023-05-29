@@ -13,7 +13,7 @@
 3. 支持 <a href="#typeinfer" title="使用返回值类型推导">返回值类型推导</a>，提高使用体验。
 4. 支持 **React 16.8** 以上版本。
 5. 支持 <a href="#config" title="配置hide时默认行为">配置</a>（隐藏弹窗时，是否默认销毁以及 resolve）。
-6. 体积小(~1.5kb gzip)、易接入、无入侵性、支持任意 UI 库。
+6. 体积小(~1kb gzip)、易接入、无入侵性、支持任意 UI 库。
 
 ## 🔨 效果
 
@@ -49,8 +49,12 @@ ReactDOM.render(
 2. **创建弹窗组件**
 
 ```tsx
-const Info = (props) => {};
-export const Info = EasyModal.create(Info);
+import EasyModal from 'ez-modal-react';
+
+const InfoModal = EazyModal.create((props) => (
+  <Modal open={props.visible} onOk={props.hide} onCancel={props.hide}></Modal>
+));
+export default InfoModal;
 ```
 
 3. **在任何地方使用**
@@ -59,26 +63,9 @@ export const Info = EasyModal.create(Info);
 
 ```tsx
 import EasyModal from 'ez-modal-react';
-import { Info } from './Info';
+import InfoModal from './InfoModal';
 
-EasyModal.show(Info, { name: 'foo' }).then((resolve) => {
-  console.log(resolve);
-});
-```
-
-4. **组件中使用 EasyMdaol 提供的方法**
-
-```tsx
-import EasyModal from 'ez-modal-react';
-import { Info } from './Info';
-
-export const Info = EasyModal.create((props) => {
-  return (
-    <Modal title="Hello" open={props.visible} onOk={props.hide} onCancel={props.hide}>
-      <h1>{props.age}</h1>
-    </Modal>
-  );
-});
+EasyModal.show(InfoModal, { name: 'foo' });
 ```
 
 - 以上就是 EasyModal 的主要功能。
@@ -99,17 +86,17 @@ import EasyModal, { InnerModalProps } from 'ez-modal-react';
 +   name: string;
 + }
 
-export const Info = EasyModal.create(
+export const InfoModal = EasyModal.create(
 + (props: Props) => {
   return (
     <Modal
       title="Hello"
       open={props.visible}
       onOk={() => {
-+       props.hide(); //应有 1 个参数，但获得 0 个。 (property) hide: (result: "modal") => void ts(2554)
++       props.hide(); // warn 应有 1 个参数，但获得 0 个。 (property) hide: (result: "modal") => void ts(2554)
       }}
       onCancel={() => {
-+       props.hide(null); // hide 接受 null 作为参数。它兼具 hide resolve 两种功能。使用null避免则可以 ts 校验失败
++       props.hide(null); //safe hide 接受 null 作为参数。它兼具 hide resolve 两种功能。
       }}
     >
       <h1>{props.age}</h1>
@@ -117,7 +104,7 @@ export const Info = EasyModal.create(
   );
 });
 
-// 类型 "{ name: string; }" 中缺少属性 "age"，但类型 "ModalProps<Props, "modal">" 中需要该属性。
++ // warn 类型 "{ name: string; }" 中缺少属性 "age"，但类型 "ModalProps<Props, "modal">" 中需要该属性。
 EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
   console.log(resolve); // 一切正常将得到 "modal"
 });
@@ -128,7 +115,7 @@ EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
 - 如需获得 ts 推导需要给 `useModal`方法传入泛型参数
 
 ```diff
-import { useModal } from 'ez-modal-react';
+import EasyModal, { useModal, InnerModalProps } from 'ez-modal-react';
 
 + interface IProps extends InnerModalProps<'modal'>/* 指定返回值类型 */ {
 +   age: number;
@@ -136,9 +123,9 @@ import { useModal } from 'ez-modal-react';
 + }
 
 export const Info = EasyModal.create((props: Props) => {
-+  const modal = useModal<Props>(); // 传入当前组件props的类型
-
-  modal.hide(); // 应有 1 个参数，但获得 0 个。ts(2554) (property) hide: (result: "modal") => void ts(2554)
++  const modal = useModal<Props>(); // 传入当前组件props的类型 可以获得 类型推导
++   console.log(modal.props) // 当前组件接收到的 props
++  modal.hide(); // 应有 1 个参数，但获得 0 个。ts(2554) (property) hide: (result: "modal") => void ts(2554)
 
   return <Moda>/*...*/</Moda>;
 });
@@ -146,18 +133,20 @@ export const Info = EasyModal.create((props: Props) => {
 
 3. <a name="config" id="config">配置默认行为</a>
 
-> EasyModal 的默认行为：
+> EasyModal hide 方法调用时的默认行为：
 >
-> 1.  hide 时默认调用 resolve 给 promise 抛出成功
+> 1.  hide 时默认调用 resolve 并传入参数，给 promise 抛出成功
 > 2.  hide 时默认调用 remove 销毁组件
 
 > 为什么这么做？
 >
-> 1. 默认 remove:通常来说，弹窗关闭意味着销毁这个弹窗。
+> 1. 默认 remove: 绝大多数场景弹窗关闭意味着销毁这个弹窗，大部分 UI 库的 Modal 都遵循这一逻辑.
 >
-> 2. 默认 resolve:通过 resolve 足以满足绝大部分场景。reject 意味着调用方还需要额外处理。完全可以通过 resolve(false) 实现。
+> 2. 默认 resolve: 同上。若需要 reject 意味着调用方还需要额外处理。完全可以通过 resolve(false) 实现。
+>
+> 3. EazyModal 允许配置上述 2 个默认行为 ，并提供 reject 方法。
 
-- 当然如果你需要，也可以改变这个默认行为，操作如下：
+- 改变默认行为的方式：在 open 方法传入第 3 个参数
 
 ```diff
 EasyModal.open(Component, {},
@@ -205,12 +194,16 @@ type props | modal :
 
 ## 🎮 Codesandbox Demo
 
-<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);border-radius:2px;" width="800" height="450" src="https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1" allowfullscreen></iframe>
+[Demo Link](https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1)
 
 ## ⭐ 灵感来源
 
 1. fhd @xpf
 2. [nice-modal-react](https://github.com/eBay/nice-modal-react)
+
+## 🙏 鸣谢
+
+感谢[SevenOutman (Doma)](https://github.com/SevenOutman) 仓库搭建的支持, 我借鉴与参考了他的 [aplayer-react](https://github.com/SevenOutman/aplayer-react) 项目。
 
 ## ⌨️ 其他
 

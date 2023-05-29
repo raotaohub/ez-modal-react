@@ -13,7 +13,7 @@ This is a easy-to-use modal state management of React. It use React's context.
 3. Supports **<a href="#typeinfer" title="">return value type inference</a>**,elevate the development experience.
 4. Supports **>=React 16.8 version**.
 5. Supports **<a href="#config" title="">config</a>** (When modal is hidden, Whether to remove and resolve by default)
-6. Small size(~1.5kb after gzip)、easy access non-intrusive、support any UI library.
+6. Small size(~1kb after gzip)、easy access non-intrusive、support any UI library.
 
 ## 🔨 Let me see
 
@@ -49,34 +49,21 @@ ReactDOM.render(
 2. **create modal**
 
 ```tsx
-const Info = (props) => {};
+import easyModal from 'ez-modal-react';
 
-export const MyModal = EasyModal.create(Info);
+const InfoModal = EazyModal.create((props) => (
+  <Modal open={props.visible} onOk={props.hide} onCancel={props.hide}></Modal>
+));
 ```
 
 3. **anywhere use it**
 
 ```tsx
 import easyModal from 'ez-modal-react';
-import MyModal from './MyModal';
+import InfoModal from './InfoModal';
 
-EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
+EasyModal.show(InfoModal, { name: 'foo' }).then((resolve) => {
   console.log(resolve);
-});
-```
-
-4. **Modal Component use method provided**
-
-```tsx
-import EasyModal from 'ez-modal-react';
-import { Info } from './Info';
-
-export const Info = EasyModal.create((props) => {
-  return (
-    <Modal title="Hello" open={props.visible} onOk={props.hide} onCancel={props.hide}>
-      <h1>{props.age}</h1>
-    </Modal>
-  );
 });
 ```
 
@@ -98,7 +85,7 @@ import EasyModal, { InnerModalProps } from 'ez-modal-react';
 +   name: string;
 + }
 
-export const Info = EasyModal.create(
+export const InfoModal = EasyModal.create(
 + (props: Props) => {
   return (
     <Modal
@@ -117,7 +104,7 @@ export const Info = EasyModal.create(
 });
 
 + // "The property 'age' is missing in the type '{ name: string; }'... ts(2345)"
-EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
+EasyModal.show(InfoModal, { name: 'foo' }).then((resolve) => {
   console.log(resolve); // if everything is in order. we will get 'modal'
 });
 ```
@@ -130,9 +117,9 @@ EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
 +   name: string;
 + }
 
-export const Info = EasyModal.create((props: Props) => {
+export const InfoModal = EasyModal.create((props: Props) => {
 +  const modal = useModal<Props /* here */>();
-
+   console.log(modal.props) // current component's props
 +  modal.hide(); // (property) hide: (result: 'modal') => void ts(2554)
 
   return <Moda>/*...*/</Moda>;
@@ -141,10 +128,11 @@ export const Info = EasyModal.create((props: Props) => {
 
 3. <a name="config" id="config">**config default**</a>
 
-> 1. When the modal is hidden, it is remove by default;
-> 2. When the modal is hidden, it is resolve by default;
+> 1. When the modal is hidden, it is remove by default.
+> 2. When the modal is hidden, it is resolve by default.
+> 3. Meet the vast majority of scenarios. EasyModal also provides a reject method.
 
-- Allows you to customize the configuration
+- How to change the default behavior: pass in the third parameter in the open method.
 
 ```diff
 EasyModal.open(Component, {},
@@ -190,12 +178,16 @@ type props | modal :
 
 ## 🎮 Codesandbox Demo
 
-<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);border-radius:2px;" width="800" height="450" src="https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1" allowfullscreen></iframe>
+[Demo Link](https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1)
 
 ## ⭐ source of inspiration
 
 1. fhd Inc @xpf
 2. [nice-modal-react](https://github.com/eBay/nice-modal-react)
+
+## Acknowledgement
+
+Thanks to [SevenOutman (Doma)](https://github.com/SevenOutman) repository building support, I consulted his [aplayer-react](https://github.com/SevenOutman/aplayer-react) project
 
 ## ⌨️ Ohter
 
