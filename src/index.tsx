@@ -5,7 +5,7 @@
  * https://opensource.org/licenses/MIT.
  *********************************************************** */
 
-import React, { useEffect, useContext, useReducer, useCallback } from 'react';
+import React, { useEffect, useContext, useReducer, useCallback, useMemo, useRef } from 'react';
 import { EASY_MODAL_HOC_TYPE, EASY_MODAL_ID, MODAL_REGISTRY, getUid, isValidEasyHOC } from './share';
 import {
   EasyModalItem,
@@ -272,10 +272,15 @@ const EasyModalPlaceholder: React.FC = () => {
 const Provider: React.FC<Record<string, any>> = ({ children }) => {
   const arr = useReducer(reducer, []);
   const modals = arr[0];
-  function innerDispatch<P, V>(action: EasyModalAction<P, V>) {
-    (arr[1] as React.Dispatch<EasyModalAction<P, V>>)(action);
-  }
-  dispatch = innerDispatch;
+  // why not write `fnRef.current = fn`? https://github.com/alibaba/hooks/issues/728
+  const fnRef = useRef<innerDispatch>();
+  fnRef.current = useMemo<innerDispatch>(() => {
+    return function innerDispatch<P, V>(action: EasyModalAction<P, V>) {
+      (arr[1] as React.Dispatch<EasyModalAction<P, V>>)(action);
+    };
+  }, [arr]);
+
+  dispatch = fnRef.current;
 
   return (
     <ModalContext.Provider value={modals}>
