@@ -17,7 +17,7 @@
 
 ## 🔨 效果
 
-![ez-modal-scenario](/assets/ez-modal-scenario.png)
+![ez-modal-scenario](assets/ez-modal-scenario.png)
 
 ## 📦 安装
 
