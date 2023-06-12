@@ -105,7 +105,7 @@ export const InfoModal = EasyModal.create(
 });
 
 + // warn 类型 "{ name: string; }" 中缺少属性 "age"，但类型 "ModalProps<Props, "modal">" 中需要该属性。
-EasyModal.show(MyModal, { name: 'foo' }).then((resolve) => {
+EasyModal.show(InfoModal, { name: 'foo' }).then((resolve) => {
   console.log(resolve); // 一切正常将得到 "modal"
 });
 ```
