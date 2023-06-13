@@ -23,10 +23,10 @@ This is a easy-to-use modal state management of React. It use React's context.
 
 ```shell
 # with yarn
-yarn add ez-modal-react
+yarn add ez-modal-react -S
 
 # or with npm
-npm install ez-modal-react
+npm install ez-modal-react -S
 ```
 
 ## 🚀 Examples

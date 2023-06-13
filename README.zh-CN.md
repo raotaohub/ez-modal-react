@@ -23,10 +23,10 @@
 
 ```shell
 # with yarn
-yarn add ez-modal-react
+yarn add ez-modal-react -S
 
 # or with npm
-npm install ez-modal-react
+npm install ez-modal-react -S
 ```
 
 ## 🚀 使用方式
