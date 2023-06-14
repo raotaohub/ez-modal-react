@@ -9,19 +9,18 @@ interface NoCreateProps extends InnerModalProps<boolean> {
   flag: string;
 }
 
+//!! no use EasyModal.create
 export const NoCreateModal = (props: NoCreateProps) => {
-  const modal = useModal();
+  const modal = useModal<NoCreateProps>();
   const [remark, setRemark] = useState('');
 
   const handleSave = async () => {
     const value = remark.trim();
-
-    modal.hide(value); // warn ts(2554)
-    props.hide(value); // warn ts(2554)
-    message.success('easy');
+    modal.hide(false);
+    message.success('easy' + value);
   };
   return (
-    <Modal title="Hello Antd" open={modal.visible} onOk={() => handleSave()} onCancel={() => modal.hide()} centered>
+    <Modal title="Hello Antd" open={modal.visible} onOk={() => handleSave()} onCancel={() => modal.hide(null)} centered>
       Greetings: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark:
@@ -37,14 +36,14 @@ export default function NoCreate() {
       <Button
         type="primary"
         onClick={async () => {
-          const res = await EasyModal.show(NoCreateModal, {
+          await EasyModal.show(NoCreateModal, {
             name: 'no create',
             value: {},
             flag: '19',
-          }); // !error
+          });
         }}
       >
-        No Create Modal
+        Bad Modal
       </Button>
     </Space>
   );

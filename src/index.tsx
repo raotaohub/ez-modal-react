@@ -16,6 +16,7 @@ import {
   ModalResolveType,
   ModalProps,
   BuildFnInterfaceCheck,
+  InnerModalProps,
 } from './type';
 
 export * from './type';
@@ -129,7 +130,9 @@ function findModal<P, V>(Modal: EasyModalHOC<P, V> | string) {
   return find ? find.Component : void 0;
 }
 
-function create<P extends ModalProps<P, V>, V = ModalResolveType<P>>(Comp: React.ComponentType<P>): EasyModalHOC<P, V> {
+function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveType<P>>(
+  Comp: React.ComponentType<P>,
+): EasyModalHOC<P, V> {
   if (!Comp) new Error('Please pass in the react component.');
   const EasyModalHOCWrapper: EasyModalHOC<P, V> = ({ id: modalId }) => {
     const { id, props, promise, config, ...innerProps } = useModal(modalId);
@@ -160,7 +163,7 @@ function register<P, V>(id: string, Modal: EasyModalHOC<P, V>, props: ModalProps
 
 function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
   Modal: EasyModalHOC<P, V>,
-  props: ModalProps<P, V>,
+  props: ModalProps<P, V> = {} as any,
   config: EasyModalItem<P, V>['config'] = {
     removeOnHide: true,
     resolveOnHide: true,

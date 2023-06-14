@@ -3,7 +3,6 @@ import { Modal, Button, Space, Input, message } from 'antd';
 import EasyModal, { useModal } from '../../src';
 import { InnerModalProps } from '../../src/type';
 
-
 interface Props extends InnerModalProps<string> {
   name: string;
   age: number;
@@ -14,10 +13,18 @@ export const Info = EasyModal.create((props: Props) => {
   const [remark, setRemark] = useState('');
 
   const handleSave = async () => {
-    modal.hide(remark); // ts(2345)
-    modal.resolve(remark); // ts(2345)
+    try {
+      const val = await new Promise((resolve) => {
+        return setTimeout(() => {
+          resolve('request' + remark);
+        }, 1000);
+      });
 
-    message.success('easy');
+      modal.hide(remark);
+      message.success('easy' + val);
+    } catch (error) {
+      // ...
+    }
   };
 
   return (
@@ -31,37 +38,18 @@ export const Info = EasyModal.create((props: Props) => {
   );
 });
 
-export default function HappyModal() {
+export default function ComplexModal() {
   return (
     <Space>
       <Button
         type="primary"
         onClick={async () => {
-          // setTimeout(() => {
-          //   EasyModal.hide(MyAntdModal1);
-          // }, 3000);
-
-          // setTimeout(() => {
-          //   EasyModal.remove(MyAntdModal1);
-          // }, 3000);
-
-          EasyModal.show(
-            Info,
-            { name: 'happy', age: 19 },
-            {
-              removeOnHide: true,
-              resolveOnHide: false,
-            },
-          )
-            .then((result) => {
-              console.log('show-result:', result);
-            })
-            .catch((reason) => {
-              console.log('show-reason:', reason);
-            });
+          EasyModal.show(Info, { name: 'happy', age: 19 }).then((result) => {
+            console.log('show-result:', result);
+          });
         }}
       >
-        Show Modal
+        Complex Modal
       </Button>
     </Space>
   );

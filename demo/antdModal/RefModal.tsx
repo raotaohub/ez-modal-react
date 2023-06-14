@@ -1,11 +1,11 @@
-import React, { useState, forwardRef } from 'react';
+import React, { useState, forwardRef, Ref, useImperativeHandle } from 'react';
 import { Modal, Button, Space, Input } from 'antd';
 import EasyModal, { useModal } from '../../src';
 import { InnerModalProps } from '../../src/type';
 
 interface IProps extends InnerModalProps<string> {
   name: string;
-  ref: React.Ref<number>;
+  ref: Ref<number>;
 }
 
 export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRef((props: IProps, ref) => {
@@ -14,6 +14,10 @@ export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRe
   console.log('ref', ref);
   console.log('modal', modal);
   console.log('props', props);
+
+  useImperativeHandle(ref, () => {
+    return 1;
+  });
 
   return (
     <Modal
@@ -69,7 +73,8 @@ export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRe
 const RefComp = EasyModal.create(ForwardRefComp);
 
 export default function RefCompDemo() {
-  const ref = React.useRef(11);
+  const ref = React.useRef<number>(null);
+
   return (
     <Space>
       <Button
@@ -82,7 +87,7 @@ export default function RefCompDemo() {
           console.log('show-res:', res);
         }}
       >
-        Show Modal - Ref
+        Ref Modal
       </Button>
     </Space>
   );

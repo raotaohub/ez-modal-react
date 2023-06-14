@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom';
 
 import EasyModal from '../src'; /*  */
 import RefCompDemo from './antdModal/RefModal';
-import HappyModal from './antdModal/HappyModal';
-import NoCreate from './antdModal/NoCreate';
+import ComplexModal from './antdModal/ComplexModal';
+import NoCreate from './antdModal/NoCreateModal';
+import NormalModal from './antdModal/NormalModal';
 
 function App() {
   return (
@@ -20,9 +21,10 @@ function App() {
     >
       <h2> Ez Modal React </h2>
       <div>
-        <HappyModal></HappyModal>
+        <ComplexModal></ComplexModal>
         <RefCompDemo></RefCompDemo>
         <NoCreate></NoCreate>
+        <NormalModal></NormalModal>
       </div>
     </div>
   );
