@@ -1,6 +1,6 @@
 {
   "name": "ez-modal-react",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "a easy modal state manager for React.",
   "keywords": [
     "react modal",
