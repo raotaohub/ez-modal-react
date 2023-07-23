@@ -6,7 +6,7 @@ This is a easy-to-use modal state management of React. It use React's context.
 
 <p align='center'>English | <a href='./README.zh-CN.md'>简体中文</a> </p>
 
-<a class="VPSocialLink" style="display:flex;justify-content:center;align-items:center;" href="https://discord.gg/vxsB2dtaZ5" target="_blank" rel="noopener"><img style="height:26px;width:26px;" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a69f118df70ad7828d4_icon_clyde_blurple_RGB.svg" loading="lazy" alt="discord" class="mark-logos"></a>
+<a style="display:flex;justify-content:center;align-items:center;" href="https://discord.gg/vxsB2dtaZ5" target="_blank" rel="noopener"><img style="height:26px;width:26px;" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a69f118df70ad7828d4_icon_clyde_blurple_RGB.svg" loading="lazy" alt="discord" class="mark-logos"></a>
 
 ## ✨ Feature
 

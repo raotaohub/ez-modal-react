@@ -164,11 +164,12 @@ function register<P, V>(id: string, Modal: EasyModalHOC<P, V>, props: ModalProps
 function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
   Modal: EasyModalHOC<P, V>,
   props: ModalProps<P, V> = {} as any,
-  config: EasyModalItem<P, V>['config'] = {
-    removeOnHide: true,
-    resolveOnHide: true,
-  },
+  config: EasyModalItem<P, V>['config'] = {},
 ) {
+  // Default config
+  config.removeOnHide = config.removeOnHide ?? true;
+  config.resolveOnHide = config.resolveOnHide ?? true;
+
   // Check & Create
   const _Modal = (isValidEasyHOC(Modal) ? Modal : create<P, V>(Modal as React.ComponentType<P>)) as EasyModalHOC<
     P,

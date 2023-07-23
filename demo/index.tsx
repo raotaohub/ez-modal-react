@@ -6,6 +6,7 @@ import RefCompDemo from './antdModal/RefModal';
 import ComplexModal from './antdModal/ComplexModal';
 import NoCreate from './antdModal/NoCreateModal';
 import NormalModal from './antdModal/NormalModal';
+import HideNotResolveModal from './antdModal/HideNotResolveModal';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <RefCompDemo></RefCompDemo>
         <NoCreate></NoCreate>
         <NormalModal></NormalModal>
+        <HideNotResolveModal></HideNotResolveModal>
       </div>
     </div>
   );
