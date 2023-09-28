@@ -28,6 +28,8 @@ let dispatch: innerDispatch = () => {
   throw new Error('No dispatch method detected, did you embed your app with EasyModal.Provider?');
 };
 
+let timer: any;
+
 function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, V>): EasyModalItem<P, V>[] {
   switch (action.type) {
     case 'easy_modal/show': {
@@ -212,6 +214,7 @@ function remove<P, V>(Modal: EasyModalHOC<P, V> | string) {
   if (!id) throw new Error('No id found in EasyModal.remove.');
   dispatch<P, V>(removeModal(id));
   delete MODAL_REGISTRY[id];
+  clearTimeout(timer);
 }
 
 export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(id?: string) {
@@ -231,7 +234,10 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
   const hideCallback: BuildFnInterfaceCheck<V> = useCallback(
     (result?: V | null) => {
       hide(modalId);
-      config?.removeOnHide && remove(modalId);
+      timer = setTimeout(() => {
+        /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
+        config?.removeOnHide && remove(modalId);
+      }, 120);
       config?.resolveOnHide && promise?.resolve(result as any); // TypeScript can only infer the type at runtime.
     },
     [modalId, promise, config?.removeOnHide, config?.resolveOnHide],
@@ -252,9 +258,7 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
 const EasyModalPlaceholder: React.FC = () => {
   const modals = useContext(ModalContext);
 
-  const visibleModals = modals.filter(
-    (item) => !!item.visible || !item?.config?.removeOnHide /* If you do not want to destroy, keep on the tree */,
-  );
+  const visibleModals = modals.filter((item) => item.id && MODAL_REGISTRY[item.id]); // ensure component is registered
 
   const toRender = visibleModals.map((item) => {
     return {
