@@ -30,7 +30,8 @@ type ActionPayload<P, V> = {
 type EasyModalAction<P = any, V = any> =
   | { type: 'easy_modal/show'; payload: ActionPayload<P, V> }
   | { type: 'easy_modal/hide'; payload: ActionPayload<P, V> }
-  | { type: 'easy_modal/remove'; payload: ActionPayload<P, V> };
+  | { type: 'easy_modal/remove'; payload: ActionPayload<P, V> }
+  | { type: 'easy_modal/update'; payload: ActionPayload<P, V> };
 
 type NoVoidValue<T> = T extends void ? never : T; /* if else */
 // type Get Generics Type

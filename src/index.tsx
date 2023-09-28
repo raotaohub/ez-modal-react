@@ -31,12 +31,12 @@ let dispatch: innerDispatch = () => {
 let timer: any;
 
 function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, V>): EasyModalItem<P, V>[] {
+  const { id } = action.payload;
+  const newState = [...state];
+  const index = newState.findIndex((v) => v.id === id);
+
   switch (action.type) {
     case 'easy_modal/show': {
-      const { id } = action.payload;
-      const newState = [...state];
-      const index = newState.findIndex((v) => v.id === id);
-
       if (index > -1) {
         newState[index] = {
           ...newState[index],
@@ -53,11 +53,16 @@ function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, 
 
       return newState;
     }
-    case 'easy_modal/hide': {
-      const { id } = action.payload;
-      const newState = [...state];
-      const index = newState.findIndex((v) => v.id === id);
 
+    case 'easy_modal/update': {
+      newState[index] = {
+        ...newState[index],
+        ...action.payload,
+      };
+      return newState;
+    }
+
+    case 'easy_modal/hide': {
       newState[index] = {
         ...newState[index],
         ...action.payload,
@@ -66,10 +71,8 @@ function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, 
 
       return newState;
     }
+
     case 'easy_modal/remove': {
-      const { id } = action.payload;
-      const newState = [...state];
-      const index = newState.findIndex((v) => v.id === id);
       newState.splice(index, 1);
 
       return newState;
@@ -92,6 +95,16 @@ function showModal<P = any, V = any>(
       props,
       promise,
       config,
+    },
+  };
+}
+
+function updateModal<P = any, V = any>(id: string, props: ModalProps<P, V>): EasyModalAction {
+  return {
+    type: 'easy_modal/update',
+    payload: {
+      id,
+      props,
     },
   };
 }
@@ -141,9 +154,14 @@ function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveTy
 
     useEffect(() => {
       return () => {
-        config?.removeOnHide && delete MODAL_REGISTRY[id];
+        if (config?.removeOnHide) {
+          timer = setTimeout(() => {
+            /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
+            remove(modalId);
+          }, 500);
+        }
       };
-    }, [id, config?.removeOnHide]);
+    }, [id, config?.removeOnHide, modalId]);
 
     return (
       <ModalIdContext.Provider value={id}>
@@ -159,7 +177,7 @@ function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveTy
 
 function register<P, V>(id: string, Modal: EasyModalHOC<P, V>, props: ModalProps<P, V>) {
   if (!MODAL_REGISTRY[id]) {
-    MODAL_REGISTRY[id] = { Component: Modal, props };
+    MODAL_REGISTRY[id] = { Component: Modal, props, id };
   }
 }
 
@@ -203,6 +221,19 @@ function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalR
   return promise;
 }
 
+function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
+  Modal: EasyModalHOC<P, V>,
+  props: ModalProps<P, V> = {} as any,
+) {
+  if (!isValidEasyHOC(Modal)) {
+    new Error('If you want to update Comp ,Please use EasyModal.create and pass in EasyModal.update(/* Comp */)');
+  }
+  // Find & Register
+  const id = getModalId<P, V>(Modal);
+  if (!id) throw new Error('No id found in EasyModal.update.');
+  dispatch<P, V>(updateModal<P, V>(id, props));
+}
+
 function hide<P, V>(Modal: EasyModalHOC<P, V> | string) {
   const id = getModalId<P, V>(Modal);
   if (!id) throw new Error('No id found in EasyModal.hide.');
@@ -234,10 +265,12 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
   const hideCallback: BuildFnInterfaceCheck<V> = useCallback(
     (result?: V | null) => {
       hide(modalId);
-      timer = setTimeout(() => {
-        /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
-        config?.removeOnHide && remove(modalId);
-      }, 120);
+      if (config?.removeOnHide) {
+        timer = setTimeout(() => {
+          /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
+          remove(modalId);
+        }, 500);
+      }
       config?.resolveOnHide && promise?.resolve(result as any); // TypeScript can only infer the type at runtime.
     },
     [modalId, promise, config?.removeOnHide, config?.resolveOnHide],
@@ -303,6 +336,7 @@ const EasyModal = {
   ModalContext,
   create,
   show,
+  update,
   hide,
   remove,
   useModal,

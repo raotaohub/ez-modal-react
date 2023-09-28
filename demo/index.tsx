@@ -7,6 +7,9 @@ import ComplexModal from './antdModal/ComplexModal';
 import NoCreate from './antdModal/NoCreateModal';
 import NormalModal from './antdModal/NormalModal';
 import HideNotResolveModal from './antdModal/HideNotResolveModal';
+import ComplexModalNew from './antdModal/ComplexModal.new';
+import EasyModalNew from '../src/index.new';
+import UpdateModal from './antdModal/UpdateModal';
 
 function App() {
   return (
@@ -27,6 +30,17 @@ function App() {
         <NoCreate></NoCreate>
         <NormalModal></NormalModal>
         <HideNotResolveModal></HideNotResolveModal>
+        <UpdateModal></UpdateModal>
+      </div>
+
+      <h2> Ez Modal React New </h2>
+      <div>
+        <EasyModalNew.Provider>
+          <EasyModalNew.ConfigProvider removeOnHide={false}>
+            <ComplexModalNew></ComplexModalNew>
+          </EasyModalNew.ConfigProvider>
+          ConfigProvider
+        </EasyModalNew.Provider>
       </div>
     </div>
   );

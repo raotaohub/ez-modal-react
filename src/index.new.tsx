@@ -5,7 +5,7 @@
  * https://opensource.org/licenses/MIT.
  *********************************************************** */
 
-import React, { useEffect, useContext, useReducer, useCallback } from 'react';
+import React, { useEffect, useContext, useReducer, useCallback, useMemo, useRef } from 'react';
 import { ForwardRefExoticComponent, PropsWithoutRef, RefAttributes } from 'react';
 
 export const EASY_MODAL_ID = Symbol.for('easy_modal_id');
@@ -52,11 +52,17 @@ type ModalPromise<V> = {
   reject: (result?: V) => void;
 };
 
+type ItemConfig = {
+  removeOnHide?: boolean;
+  resolveOnHide?: boolean;
+};
+
 type EasyModalItem<P = any, V = any> = {
   id: string;
   props?: P;
   visible?: boolean;
   promise?: ModalPromise<V>;
+  config?: ItemConfig;
 };
 type innerDispatch = <P, V>(action: EasyModalAction<P, V>) => void;
 
@@ -74,7 +80,7 @@ type EasyModalAction<P = any, V = any> =
 
 // type Get Generics Type
 type NoVoidValue<T> = T extends void ? never : T; /* if else */
-type BuildFnInterfaceCheck<T> = NoVoidValue<T> extends never ? () => void : (result: T) => void;
+type BuildFnInterfaceCheck<V> = NoVoidValue<V> extends never ? () => void : (result: V | null /* hack */) => void;
 type ModalResolveType<V> = NoVoidValue<V> extends never
   ? never
   : V extends InnerModalProps<infer Result>
@@ -220,6 +226,8 @@ const getModalId = <P, V>(Modal: HOC<P, V> | string): string => {
 };
 
 function findModal<P, V, R>(Modal: HOC<P, V, R> | string) {
+  console.log('MODAL_REGISTRY', MODAL_REGISTRY);
+
   if (typeof Modal === 'string' && MODAL_REGISTRY[Modal]) {
     return MODAL_REGISTRY[Modal].Component;
   }
@@ -288,10 +296,14 @@ function create<P extends ModalProps<P, V>, V, R>(Comp: NormalModal<P, V> | With
   return EasyModalHOCWrapper as unknown as HOC<P, V, R>;
 }
 
+const cache: any = {};
+
 function register<P, V, R>(id: string, Modal: HOC<P, V, R>, props: ModalProps<P, V>) {
   if (!MODAL_REGISTRY[id]) {
     MODAL_REGISTRY[id] = { Component: Modal, props };
+    cache[id] = { Component: Modal, props };
   }
+  console.log(cache);
 }
 
 function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
@@ -316,7 +328,15 @@ function show<
   // R extends 'ref' extends keyof P ? Ref<Pick<P, 'ref'>> : never = 'ref' extends keyof P ? Ref<Pick<P, 'ref'>> : never,
   // R extends Pick<InnerModalProps & { ref: unknown }, 'ref'> = Pick<InnerModalProps & { ref: unknown }, 'ref'>,
   R extends Omit<ModalProps<P, V>, 'ref'> = Omit<ModalProps<P, V>, 'ref'>,
->(Modal: NormalModal<P, V> | WithRefModal<P, V, R>, props: ModalProps<P, V>) {
+>(
+  Modal: NormalModal<P, V> | WithRefModal<P, V, R>,
+  props: ModalProps<P, V>,
+  config: EasyModalItem<P, V>['config'] = {},
+) {
+  // Default config
+  config.removeOnHide = config.removeOnHide ?? true;
+  config.resolveOnHide = config.resolveOnHide ?? true;
+
   // Check & Create
   const _Modal = create<P, V, R>(Modal);
   /* `as` tell ts that _Modal's type */
@@ -383,8 +403,8 @@ export function useModal<
   const hideCallback: BuildFnInterfaceCheck<V> = useCallback(
     (result?: V) => {
       hide(modalId);
-      removeOnHide && remove(modalId);
-      resolveOnHide && modalInfo?.promise?.resolve(result);
+      setTimeout(() => removeOnHide && remove(modalId));
+      setTimeout(() => resolveOnHide && modalInfo?.promise?.resolve(result));
     },
     [modalId, modalInfo.promise, removeOnHide, resolveOnHide],
   );
@@ -426,13 +446,20 @@ const EasyModalPlaceholder: React.FC = () => {
   );
 };
 
+EasyModalPlaceholder.displayName = 'EasyModalPlaceholder_New';
+
 const Provider: React.FC<React.PropsWithChildren<Record<keyof any, any>>> = ({ children }) => {
   const arr = useReducer(reducer, []);
   const modals = arr[0];
-  function innerDispatch<P, V>(action: EasyModalAction<P, V>) {
-    (arr[1] as React.Dispatch<EasyModalAction<P, V>>)(action);
-  }
-  dispatch = innerDispatch;
+  // why not write `fnRef.current = fn`? https://github.com/alibaba/hooks/issues/728
+  const fnRef = useRef<innerDispatch>();
+  fnRef.current = useMemo<innerDispatch>(() => {
+    return function innerDispatch<P, V>(action: EasyModalAction<P, V>) {
+      (arr[1] as React.Dispatch<EasyModalAction<P, V>>)(action);
+    };
+  }, [arr]);
+
+  dispatch = fnRef.current;
 
   return (
     <ModalContext.Provider value={modals}>
@@ -442,12 +469,13 @@ const Provider: React.FC<React.PropsWithChildren<Record<keyof any, any>>> = ({ c
   );
 };
 
-const ConfigProvider: React.FC<ConfigContextProps> = ({ children, ...props }) => {
-  let resolveOnHide = initialConfig.resolveOnHide;
-  let removeOnHide = initialConfig.removeOnHide;
+Provider.displayName = 'EasyModal_Provider_New';
 
-  if (typeof props.resolveOnHide !== 'undefined' && !props.resolveOnHide) resolveOnHide = false;
-  if (typeof props.removeOnHide !== 'undefined' && !props.removeOnHide) removeOnHide = false;
+const ConfigProvider: React.FC<ConfigContextProps> = ({ children, ...props }) => {
+  const resolveOnHide =
+    props.resolveOnHide ?? Object.hasOwnProperty.call(props, 'resolveOnHide') ?? initialConfig.resolveOnHide;
+  const removeOnHide =
+    props.removeOnHide ?? Object.hasOwnProperty.call(props, 'removeOnHide') ?? initialConfig.removeOnHide;
 
   return (
     <ConfigContext.Provider
@@ -460,6 +488,8 @@ const ConfigProvider: React.FC<ConfigContextProps> = ({ children, ...props }) =>
     </ConfigContext.Provider>
   );
 };
+
+ConfigProvider.displayName = 'EasyModal_ConfigProvider_New';
 
 // export const antdModalV4 = <P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
 //   modal: ReturnType<typeof useModal<P, V>>,
@@ -483,7 +513,7 @@ const ConfigProvider: React.FC<ConfigContextProps> = ({ children, ...props }) =>
 //   };
 // };
 
-const EasyModal = {
+const EasyModalNew = {
   Provider,
   ModalContext,
   ConfigProvider,
@@ -494,4 +524,4 @@ const EasyModal = {
   useModal,
 };
 
-export default EasyModal;
+export default EasyModalNew;

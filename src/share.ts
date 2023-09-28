@@ -8,6 +8,7 @@ export const MODAL_REGISTRY: Record<
   string,
   {
     props: any;
+    id: string;
     Component: EasyModalHOC<any, any>;
   }
 > = {};
