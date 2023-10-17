@@ -158,7 +158,7 @@ function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveTy
           timer = setTimeout(() => {
             /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
             remove(modalId);
-          }, 500);
+          }, 300);
         }
       };
     }, [id, config?.removeOnHide, modalId]);
@@ -269,7 +269,7 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
         timer = setTimeout(() => {
           /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
           remove(modalId);
-        }, 500);
+        }, 300);
       }
       config?.resolveOnHide && promise?.resolve(result as any); // TypeScript can only infer the type at runtime.
     },
