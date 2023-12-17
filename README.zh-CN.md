@@ -1,12 +1,11 @@
-<h1 align='center'>Ez Modal React</h1></p>
+![ez-modal-scenario](assets/idea.png)
 
-一个简单易用的 Modal 状态管理库，用于 React 应用。基于 Context 实现。
+<p><h4 align='center'>Ez Modal React</h4></p>
 
-[![NPM](https://img.shields.io/npm/v/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![Downloads](https://img.shields.io/npm/dm/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE)
-
+一个简单易用的 开关状态管理库，用于 React 应用。基于 Context 实现。通常可用于 Modal 框~
 <p align='center'>简体中文 | <a href='./README.md'>English</a> </p>
 
-<a style="display:flex;justify-content:center;align-items:center;" href="https://discord.gg/vxsB2dtaZ5" target="_blank" rel="noopener"><img style="height:26px;width:26px;" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a69f118df70ad7828d4_icon_clyde_blurple_RGB.svg" loading="lazy" alt="discord" class="mark-logos"></a>
+[![NPM](https://img.shields.io/npm/v/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![Downloads](https://img.shields.io/npm/dm/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE)
 
 ## ✨ 特性
 
@@ -138,22 +137,20 @@ export const Info = EasyModal.create((props: Props) => {
 > EasyModal hide 方法调用时的默认行为：
 >
 > 1.  hide 时默认调用 resolve 并传入参数，给 promise 抛出成功
-> 2.  hide 时默认调用 remove 销毁组件
+> 2.  ~~hide 时默认调用 remove 销毁组件~~
 
 > 为什么这么做？
 >
-> 1. 默认 remove: 绝大多数场景弹窗关闭意味着销毁这个弹窗，大部分 UI 库的 Modal 都遵循这一逻辑.
+> 1. ~~默认 remove: 绝大多数场景弹窗关闭意味着销毁这个弹窗，大部分 UI 库的 Modal 都遵循这一逻辑.（绝大部分 UI 库在关闭时有一段过度动画，因此 remove 的时机应该交给 诸如 affterClose 的回调）~~
 >
 > 2. 默认 resolve: 同上。若需要 reject 意味着调用方还需要额外处理。完全可以通过 resolve(false) 实现。
->
-> 3. EazyModal 允许配置上述 2 个默认行为 ，并提供 reject 方法。
 
 - 改变默认行为的方式：在 open 方法传入第 3 个参数
 
 ```diff
 EasyModal.open(Component, {},
 +  config:{
-+    resolveOnHide:false,
+~~   resolveOnHide:false, // WARN 不再受支持，非破坏性改动~~
 +    removeOnHide:false,
 +  }
 );
@@ -181,7 +178,8 @@ type props | modal :
   remove: function; // 销毁当前 Modal 方法 ；
   resolve: function;// 当前 Modal resolve 方法 ；
   reject: function; // 当前 Modal reject 方法 ；
-  ...
+  update: function; // 当前 Modal 更新 方法 ；
+  :
 }
 ```
 

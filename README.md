@@ -1,12 +1,12 @@
-<h1 align='center'>Ez Modal React</h1></p>
+![ez-modal-scenario](assets/idea.png)
+
+<p><h4 align='center'>Ez Modal React</h4></p>
 
 This is a easy-to-use modal state management of React. It use React's context.
 
-[![NPM](https://img.shields.io/npm/v/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![Downloads](https://img.shields.io/npm/dm/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE)
-
 <p align='center'>English | <a href='./README.zh-CN.md'>简体中文</a> </p>
 
-<a style="display:flex;justify-content:center;align-items:center;" href="https://discord.gg/vxsB2dtaZ5" target="_blank" rel="noopener"><img style="height:26px;width:26px;" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a69f118df70ad7828d4_icon_clyde_blurple_RGB.svg" loading="lazy" alt="discord" class="mark-logos"></a>
+[![NPM](https://img.shields.io/npm/v/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![Downloads](https://img.shields.io/npm/dm/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE)
 
 ## ✨ Feature
 
@@ -130,9 +130,8 @@ export const InfoModal = EasyModal.create((props: Props) => {
 
 3. <a name="config" id="config">**config default**</a>
 
-> 1. When the modal is hidden, it is remove by default.
+> 1. ~~When the modal is hidden, it is remove by default.~~
 > 2. When the modal is hidden, it is resolve by default.
-> 3. Meet the vast majority of scenarios. EasyModal also provides a reject method.
 
 - How to change the default behavior: pass in the third parameter in the open method.
 
@@ -140,7 +139,7 @@ export const InfoModal = EasyModal.create((props: Props) => {
 EasyModal.open(Component, {},
 +  config:{
 +    resolveOnHide:false,
-+    removeOnHide:false,
+~~    removeOnHide:false,~~
 +  }
 );
 ```
@@ -152,7 +151,7 @@ const CreatedModal = EasyModal.create(Component); // create EasyModal Modal； r
 
 const result = EasyModal.open(CreatedModal, Props); // open CreatedModal Modal； return promise
 
-const ______ = EasyModal.hide(CreatedModal); // hide CreatedModal Modal； return undefined
+const result = EasyModal.hide(CreatedModal); // hide CreatedModal Modal； return undefined
 
 props; // Within a component, EasyModal injects additional properties in addition to the user's own parameters
 
@@ -166,7 +165,6 @@ type props | modal :
   remove: function; // remove current Modal fn
   resolve: function; // resolve current Modal fn
   reject: function; // reject current Modal fn
-  ...
 }
 ```
 
