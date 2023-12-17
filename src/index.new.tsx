@@ -17,6 +17,7 @@ export const MODAL_REGISTRY: Record<
   {
     props: any;
     Component: EasyModalHOC<any, any>;
+    visible?: boolean;
   }
 > = {};
 
@@ -55,6 +56,7 @@ type ModalPromise<V> = {
 type ItemConfig = {
   removeOnHide?: boolean;
   resolveOnHide?: boolean;
+  repeat?: boolean;
 };
 
 type EasyModalItem<P = any, V = any> = {
@@ -159,6 +161,7 @@ function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, 
           visible: true,
         });
       }
+      MODAL_REGISTRY[id].visible = true;
 
       return newState;
     }
@@ -172,6 +175,7 @@ function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, 
         ...action.payload,
         visible: false,
       };
+      MODAL_REGISTRY[id].visible = false;
 
       return newState;
     }
@@ -336,15 +340,23 @@ function show<
   // Default config
   config.removeOnHide = config.removeOnHide ?? true;
   config.resolveOnHide = config.resolveOnHide ?? true;
+  config.repeat = config.repeat ?? false;
 
   // Check & Create
   const _Modal = create<P, V, R>(Modal);
   /* `as` tell ts that _Modal's type */
 
   // Find & Register
-  const id = getModalId<P, V>(_Modal);
-  const find = findModal<P, V, R>(_Modal) ?? findModal<P, V, R>(id);
-  if (!find) register<P, V, R>(id, _Modal, props);
+  // TODO repeat
+  let id = getModalId<P, V>(_Modal);
+  if ((MODAL_REGISTRY[id] || MODAL_REGISTRY[id]?.visible) && config.repeat) {
+    id = getUid();
+    register(id, _Modal, props);
+  } else {
+    id = getModalId<P, V>(_Modal);
+    const find = findModal<P, V, R>(_Modal) ?? findModal<P, V, R>(id);
+    if (!find) register<P, V, R>(id, _Modal, props);
+  }
 
   // Promise Control
   // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#non-null-assertion-operator

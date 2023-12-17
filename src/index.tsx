@@ -150,18 +150,7 @@ function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveTy
 ): EasyModalHOC<P, V> {
   if (!Comp) new Error('Please pass in the react component.');
   const EasyModalHOCWrapper: EasyModalHOC<P, V> = ({ id: modalId }) => {
-    const { id, props, promise, config, ...innerProps } = useModal(modalId);
-
-    useEffect(() => {
-      return () => {
-        if (config?.removeOnHide) {
-          timer = setTimeout(() => {
-            /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
-            remove(modalId);
-          }, 300);
-        }
-      };
-    }, [id, config?.removeOnHide, modalId]);
+    const { id, props, promise, ...innerProps } = useModal(modalId);
 
     return (
       <ModalIdContext.Provider value={id}>
@@ -171,7 +160,7 @@ function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveTy
   };
 
   EasyModalHOCWrapper.__typeof_easy_modal__ = EASY_MODAL_HOC_TYPE;
-
+  EasyModalHOCWrapper.displayName = 'EasyModalHOCWrapper';
   return EasyModalHOCWrapper;
 }
 
@@ -223,7 +212,7 @@ function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalR
 
 function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
   Modal: EasyModalHOC<P, V>,
-  props: ModalProps<P, V> = {} as any,
+  props: Partial<ModalProps<P, V>> = {} as any,
 ) {
   if (!isValidEasyHOC(Modal)) {
     new Error('If you want to update Comp ,Please use EasyModal.create and pass in EasyModal.update(/* Comp */)');
@@ -231,7 +220,8 @@ function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = Moda
   // Find & Register
   const id = getModalId<P, V>(Modal);
   if (!id) throw new Error('No id found in EasyModal.update.');
-  dispatch<P, V>(updateModal<P, V>(id, props));
+  const originProps = MODAL_REGISTRY[id]?.props;
+  dispatch<P, V>(updateModal<P, V>(id, { ...originProps, ...props }));
 }
 
 function hide<P, V>(Modal: EasyModalHOC<P, V> | string) {
@@ -265,15 +255,9 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
   const hideCallback: BuildFnInterfaceCheck<V> = useCallback(
     (result?: V | null) => {
       hide(modalId);
-      if (config?.removeOnHide) {
-        timer = setTimeout(() => {
-          /* If you do not want to destroy, keep on the tree , set config.removeOnHide = false */
-          remove(modalId);
-        }, 300);
-      }
       config?.resolveOnHide && promise?.resolve(result as any); // TypeScript can only infer the type at runtime.
     },
-    [modalId, promise, config?.removeOnHide, config?.resolveOnHide],
+    [modalId, promise, config?.resolveOnHide],
   );
 
   const removeCallback = useCallback(() => {
@@ -291,9 +275,9 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
 const EasyModalPlaceholder: React.FC = () => {
   const modals = useContext(ModalContext);
 
-  const visibleModals = modals.filter((item) => item.id && MODAL_REGISTRY[item.id]); // ensure component is registered
+  const validModals = modals.filter((item) => item.id && MODAL_REGISTRY[item.id]); // ensure component is registered
 
-  const toRender = visibleModals.map((item) => {
+  const toRender = validModals.map((item) => {
     return {
       id: item.id,
       Component: MODAL_REGISTRY[item.id].Component,

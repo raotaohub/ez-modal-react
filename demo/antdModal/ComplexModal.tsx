@@ -47,6 +47,12 @@ export default function ComplexModal() {
           EasyModal.show(Info, { name: 'happy', age: 19 }).then((result) => {
             console.log('show-result:', result);
           });
+
+          EasyModal.show(Info, { name: 'happy2', age: 19 }).then((result) => {
+            console.log('show-result:', result);
+          });
+
+          EasyModal.update(Info, { name: 'happy3' });
         }}
       >
         Complex Modal

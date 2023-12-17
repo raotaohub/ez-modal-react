@@ -1,3 +1,4 @@
+import { FunctionComponent } from 'react';
 import { EASY_MODAL_ID } from './share';
 
 type ModalPromise<V> = {
@@ -6,6 +7,7 @@ type ModalPromise<V> = {
 };
 
 type ItemConfig = {
+  /** @deprecated To be removed , Because component libraries have transition animations */
   removeOnHide?: boolean;
   resolveOnHide?: boolean;
 };
@@ -53,7 +55,7 @@ interface EasyModal<P, V> {
 }
 
 // Modal HOC Interface
-interface EasyModalHOC<P, V> extends EasyModal<P, V> {
+interface EasyModalHOC<P, V> extends EasyModal<P, V>, Omit<FunctionComponent<P>, ''> {
   [EASY_MODAL_ID]?: string;
   __typeof_easy_modal__?: symbol;
 }
