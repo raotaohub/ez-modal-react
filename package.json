@@ -34,6 +34,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.tsx",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "clean": "rimraf node_modules",
     "dev": "vite",
     "format": "prettier --write .",
