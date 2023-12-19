@@ -1,20 +1,18 @@
 ![ez-modal-scenario](assets/idea.png)
 
-<p><h4 align='center'>Ez Modal React</h4></p>
+<p><h4 align='center'>ez modal react</h4></p>
 
-一个简单易用的 开关状态管理库，用于 React 应用。基于 Context 实现。通常可用于 Modal 框~
+一个简单易用的开关状态管理库，用于 React 应用。基于 Context 实现。通常可用于 Modal 框~
+
 <p align='center'>简体中文 | <a href='./README.md'>English</a> </p>
 
 [![NPM](https://img.shields.io/npm/v/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![Downloads](https://img.shields.io/npm/dm/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE)
 
 ## ✨ 特性
 
-1. 基于 **Promise** ，使 Modal 和业务代码分离。
-2. 支持 **hook** 和 **props** 注入 2 种方式，获得状态和控制权。
-3. 支持 <a href="#typeinfer" title="使用返回值类型推导">返回值类型推导</a>，提高使用体验。
-4. 支持 **React 16.8** 以上版本。
-5. 支持 <a href="#config" title="配置hide时默认行为">配置</a>（隐藏弹窗时，是否默认销毁以及 resolve）。
-6. 体积小(~1kb gzip)、易接入、无入侵性、支持任意 UI 库。
+1. 基于 **Promise**，且无需管理开关状态，可以减少繁琐的状态管理。
+2. 支持 <a href="#typeinfer" title="使用返回值类型推导">返回值类型推导</a>
+3. 体积小(~1kb gzip)、易接入、无入侵性、支持任意 UI 库。
 
 ## 🔨 效果
 

@@ -1,6 +1,6 @@
 ![ez-modal-scenario](assets/idea.png)
 
-<p><h4 align='center'>Ez Modal React</h4></p>
+<p><h4 align='center'>ez modal react</h4></p>
 
 This is a easy-to-use modal state management of React. It use React's context.
 
@@ -10,12 +10,9 @@ This is a easy-to-use modal state management of React. It use React's context.
 
 ## ✨ Feature
 
-1. Based on **Promise**, separate modal and ohter code.
-2. Supports **hook** and **props** injection.
-3. Supports **<a href="#typeinfer" title="">return value type inference</a>**,elevate the development experience.
-4. Supports **>=React 16.8 version**.
-5. Supports **<a href="#config" title="">config</a>** (When modal is hidden, Whether to remove and resolve by default)
-6. Small size(~1kb after gzip)、easy access non-intrusive、support any UI library.
+1. Based on **Promise**,In addition, there is no need to manage the switch status, which can reduce the tedious status management.
+2. Supports **<a href="#typeinfer" title="">return value type inference</a>**,elevate the development experience.
+3. Small size(~1kb after gzip)、easy access non-intrusive、support any UI library.
 
 ## 🔨 Let me see
 
