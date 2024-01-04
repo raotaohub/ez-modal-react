@@ -12,6 +12,9 @@ export const Info = EasyModal.create((props: Props) => {
   const modal = useModal<Props>();
   const [remark, setRemark] = useState('');
 
+  console.log('props', props);
+  console.log('modal', modal);
+
   const handleSave = async () => {
     modal.hide(remark);
     modal.resolve('manual resolve:' + remark);
@@ -22,7 +25,7 @@ export const Info = EasyModal.create((props: Props) => {
     <Modal title="resolveOnHide:false" open={modal.visible} onOk={() => handleSave()} onCancel={() => modal.hide(null)}>
       Greetings: {props.name}!
       <div style={{ padding: '10px 0' }}>
-        remark：
+        remark：{modal.age}
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />
       </div>
     </Modal>

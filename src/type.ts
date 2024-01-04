@@ -1,28 +1,43 @@
 import { FunctionComponent } from 'react';
 import { EASY_MODAL_ID } from './share';
 
+type Id = string | number;
+
 type ModalPromise<V> = {
-  resolve: BuildFnInterfaceCheck<V>;
+  resolve: GenerateTypeInfer<V>;
   reject: (reason: any) => void;
 };
 
 type ItemConfig = {
-  /** @deprecated To be removed , Because component libraries have transition animations */
+  /**
+   * @deprecated
+   * It is up to the user to decide when to remove,
+   * Because component libraries have transition animations
+   */
   removeOnHide?: boolean;
+  /**
+   * Whether to default to resolve when the hide method is called
+   * @name defaultValue = true
+   */
   resolveOnHide?: boolean;
+  /**
+   * @name only custom item's id
+   */
+  id?: Id;
 };
 
 type EasyModalItem<P = any, V = any> = {
-  id: string;
+  id: Id;
   props: P;
   visible: boolean;
   promise: ModalPromise<V>;
   config: ItemConfig;
 };
+
 type innerDispatch = <P, V>(action: EasyModalAction<P, V>) => void;
 
 type ActionPayload<P, V> = {
-  id: string;
+  id: Id;
   props?: P;
   visible?: boolean;
   promise?: ModalPromise<V>;
@@ -37,13 +52,13 @@ type EasyModalAction<P = any, V = any> =
 
 type NoVoidValue<T> = T extends void ? never : T; /* if else */
 // type Get Generics Type
-type BuildFnInterfaceCheck<V> = NoVoidValue<V> extends never ? () => void : (result: V | null /* hack */) => void;
+type GenerateTypeInfer<V> = NoVoidValue<V> extends never ? () => void : (result: V | null /* hack */) => void;
 
 type InnerModalProps<V = never> = {
-  id: string;
+  id: Id;
   visible: boolean;
-  hide: BuildFnInterfaceCheck<V>;
-  resolve: BuildFnInterfaceCheck<V>;
+  hide: GenerateTypeInfer<V>;
+  resolve: GenerateTypeInfer<V>;
   reject: (reason: any) => void;
   remove: () => void;
   config?: ItemConfig;
@@ -56,8 +71,9 @@ interface EasyModal<P, V> {
 
 // Modal HOC Interface
 interface EasyModalHOC<P, V> extends EasyModal<P, V>, Omit<FunctionComponent<P>, ''> {
-  [EASY_MODAL_ID]?: string;
+  [EASY_MODAL_ID]?: Id;
   __typeof_easy_modal__?: symbol;
+  __easy_modal_is_single__?: boolean;
 }
 
 // Props Injected By Users
@@ -77,6 +93,7 @@ export type {
   ModalPromise,
   ModalResolveType,
   ModalProps,
-  BuildFnInterfaceCheck,
+  GenerateTypeInfer,
   InnerModalProps,
+  Id,
 };

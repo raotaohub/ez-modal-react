@@ -43,7 +43,7 @@ export default function NoCreate() {
           });
         }}
       >
-        Bad Modal
+        Non-use create
       </Button>
     </Space>
   );

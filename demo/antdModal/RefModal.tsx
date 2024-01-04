@@ -1,5 +1,5 @@
 import React, { useState, forwardRef, Ref, useImperativeHandle } from 'react';
-import { Modal, Button, Space, Input } from 'antd';
+import { Modal, Button, Space, Input, InputNumber } from 'antd';
 import EasyModal, { useModal } from '../../src';
 import { InnerModalProps } from '../../src/type';
 
@@ -8,29 +8,25 @@ interface IProps extends InnerModalProps<string> {
   ref: Ref<number>;
 }
 
-export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRef((props: IProps, ref) => {
+export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRef((props, ref) => {
   const modal = useModal<IProps>();
   const [remark, setRemark] = useState('');
-  console.log('ref', ref);
-  console.log('modal', modal);
-  console.log('props', props);
+  const [input, setInput] = useState<number>();
 
   useImperativeHandle(ref, () => {
-    return 1;
+    return input!;
   });
 
   return (
-    <Modal
-      title="Hello Antd"
-      open={modal.visible}
-      onCancel={() => {
-        props.hide(null);
-      }}
-    >
+    <Modal title="Hello Antd" open={modal.visible}>
       Greetings: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark:
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />
+      </div>
+      <div style={{ padding: '10px 0' }}>
+        ref:
+        <InputNumber<number> value={input} onChange={(e) => setInput(e)} style={{ width: 180 }} />
       </div>
       <div>
         <h1>modal</h1>
@@ -85,6 +81,7 @@ export default function RefCompDemo() {
             ref,
           });
           console.log('show-res:', res);
+          console.log('show-ref:', ref.current);
         }}
       >
         Ref Modal

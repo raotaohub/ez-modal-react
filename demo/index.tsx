@@ -1,56 +1,45 @@
-import { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
-
 import EasyModal from '../src'; /*  */
-import RefCompDemo from './antdModal/RefModal';
+import { Layout, Space } from 'antd';
+
+/* import comp */
 import ComplexModal from './antdModal/ComplexModal';
+import UpdateModal from './antdModal/UpdateModal';
+import HideNotResolveModal from './antdModal/HideNotResolveModal';
 import NoCreate from './antdModal/NoCreateModal';
 import NormalModal from './antdModal/NormalModal';
-import HideNotResolveModal from './antdModal/HideNotResolveModal';
-import ComplexModalNew from './antdModal/ComplexModal.new';
-import EasyModalNew from '../src/index.new';
-import UpdateModal from './antdModal/UpdateModal';
+import RefCompDemo from './antdModal/RefModal';
+import MultModal from './antdModal/MultModal';
+
+const layoutStyle: React.CSSProperties = {
+  width: '100vw',
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
 
 function App() {
   return (
-    <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
+    <Layout style={layoutStyle}>
       <h2> Ez Modal React </h2>
-      <div>
+      <Space size={[20, 20]} align="start" wrap>
         <ComplexModal></ComplexModal>
         <RefCompDemo></RefCompDemo>
         <NoCreate></NoCreate>
         <NormalModal></NormalModal>
         <HideNotResolveModal></HideNotResolveModal>
         <UpdateModal></UpdateModal>
-      </div>
-
-      <h2> Ez Modal React New </h2>
-      <div>
-        <EasyModalNew.Provider>
-          <EasyModalNew.ConfigProvider removeOnHide={false}>
-            <ComplexModalNew></ComplexModalNew>
-          </EasyModalNew.ConfigProvider>
-          ConfigProvider
-        </EasyModalNew.Provider>
-      </div>
-    </div>
+        <MultModal></MultModal>
+      </Space>
+    </Layout>
   );
 }
 
 ReactDOM.render(
-  <StrictMode>
-    <EasyModal.Provider>
-      <App />
-    </EasyModal.Provider>
-  </StrictMode>,
+  <EasyModal.Provider>
+    <App />
+  </EasyModal.Provider>,
   document.getElementById('root') as HTMLElement,
 );

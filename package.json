@@ -1,6 +1,6 @@
 {
   "name": "ez-modal-react",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "description": "a easy modal state manager for React.",
   "keywords": [
     "react modal",
@@ -72,6 +72,9 @@
     "react": ">16.8.0",
     "react-dom": ">16.8.0",
     "typescript": ">4.0.0"
+  },
+  "engines": {
+    "node": ">=16.20.1"
   },
   "publishConfig": {
     "access": "public"
