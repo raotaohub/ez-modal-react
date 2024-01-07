@@ -5,20 +5,28 @@
  * https://opensource.org/licenses/MIT.
  *********************************************************** */
 
-import React, { useContext, useReducer, useCallback, useMemo, useRef } from 'react';
-import { EASY_MODAL_HOC_TYPE, EASY_MODAL_ID, MODAL_REGISTRY, getUid, isValidId, isValidEasyHOC } from './share';
+import React, { useCallback, useContext, useMemo, useReducer, useRef } from 'react';
 import usage, { HowUse } from './howUse';
+import {
+  EASY_MODAL_HOC_TYPE,
+  findModal,
+  getEasyHoc,
+  getModalId,
+  isValidEasyHOC,
+  isValidId,
+  MODAL_REGISTRY,
+} from './share';
 import type {
-  EasyModalItem,
-  EasyModalHOC,
-  innerDispatch,
   EasyModalAction,
-  ModalPromise,
-  ModalResolveType,
-  ModalProps,
+  EasyModalHOC,
+  EasyModalItem,
   GenerateTypeInfer,
-  InnerModalProps,
   Id,
+  innerDispatch,
+  InnerModalProps,
+  ModalPromise,
+  ModalProps,
+  ModalResolveType,
 } from './type';
 export * from './type';
 
@@ -34,7 +42,7 @@ function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, 
   const newState = [...state];
   const index = newState.findIndex((v) => v.id === id);
 
-  Object.assign(MODAL_REGISTRY[id], { ...rest });
+  if (MODAL_REGISTRY[id]) Object.assign(MODAL_REGISTRY[id], { ...rest });
 
   switch (action.type) {
     case 'easy_modal/show': {
@@ -124,27 +132,11 @@ function removeModal(id: Id): EasyModalAction {
   };
 }
 
-const getModalId = <P, V>(Modal: EasyModalHOC<P, V> | Id, id?: Id): Id => {
-  if (isValidId(Modal)) return Modal;
-
-  if (!Modal[EASY_MODAL_ID]) Modal[EASY_MODAL_ID] = getUid(id);
-
-  return Modal[EASY_MODAL_ID];
-};
-
-function findModal<P, V>(Modal: EasyModalHOC<P, V> | Id) {
-  if (isValidId(Modal) && MODAL_REGISTRY[Modal]) return MODAL_REGISTRY[Modal];
-
-  const find = Object.values(MODAL_REGISTRY).find((item) => item.Component === (Modal as EasyModalHOC<P, V>));
-
-  return find ? find : void 0;
-}
-
 function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveType<P>>(
   Comp: React.ComponentType<P>,
   single = true,
 ): EasyModalHOC<P, V> {
-  if (!Comp) new Error(usage(HowUse.create));
+  if (!Comp) throw new Error(usage(HowUse.create));
   const EasyModalHOCWrapper: EasyModalHOC<P, V> = ({ id }) => {
     const inject = useModal<P>(id);
 
@@ -166,12 +158,6 @@ function register<P, V>(id: Id, Modal: EasyModalHOC<P, V>, props: ModalProps<P, 
   if (!MODAL_REGISTRY[id]) {
     MODAL_REGISTRY[id] = { Component: Modal, props, id };
   }
-}
-
-function hasEasyHoc(id: Id, where: keyof typeof EasyModal) {
-  const find = findModal(id);
-  if (!find) throw new Error(`No Component found in EasyModal.${where}.`);
-  return find;
 }
 
 function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
@@ -218,30 +204,23 @@ function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = Moda
   ModalOrId: EasyModalHOC<P, V> | Id,
   props: Partial<ModalProps<P, V>> = {} as any,
 ) {
-  if (!isValidEasyHOC(ModalOrId) && !isValidId(ModalOrId)) throw new Error(usage(HowUse.update));
+  if (!isValidEasyHOC(ModalOrId) && !isValidId(ModalOrId)) return console.warn(usage(HowUse.update));
 
-  // Find id
-  const id = getModalId<P, V>(ModalOrId);
-  if (!id) throw new Error('No id found in EasyModal.update. It could have been removed');
-
-  hasEasyHoc(id, 'update');
+  const { id } = getEasyHoc(ModalOrId, 'update');
 
   const originProps = MODAL_REGISTRY[id]?.props || {};
   dispatch<P, V>(updateModal<P, V>(id, { ...originProps, ...props }));
 }
 
 function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
-  const id = getModalId<P, V>(Modal);
-  if (!id) throw new Error('No id found in EasyModal.hide.');
-
-  const find = hasEasyHoc(id, 'hide');
+  const { id, hoc } = getEasyHoc(Modal, 'hide');
 
   dispatch<P, V>(hideModal(id));
 
-  if (find.config?.resolveOnHide) find.promise?.resolve(result);
+  if (hoc?.config?.resolveOnHide) hoc.promise?.resolve(result);
 
   /* if not single EasyModalHOC, after hide remove it */
-  if (!find.Component.__easy_modal_is_single__) {
+  if (!hoc?.Component.__easy_modal_is_single__) {
     setTimeout(() => {
       remove(id);
     }, 300);
@@ -249,11 +228,7 @@ function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
 }
 
 function remove<P, V>(Modal: EasyModalHOC<P, V> | Id) {
-  const id = getModalId<P, V>(Modal);
-  if (!id) throw new Error('No id found in EasyModal.remove.');
-
-  hasEasyHoc(id, 'remove');
-
+  const { id } = getEasyHoc(Modal, 'remove');
   dispatch<P, V>(removeModal(id));
 }
 

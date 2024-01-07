@@ -70,7 +70,7 @@ interface EasyModal<P, V> {
 }
 
 // Modal HOC Interface
-interface EasyModalHOC<P, V> extends EasyModal<P, V>, Omit<FunctionComponent<P>, ''> {
+interface EasyModalHOC<P = unknown, V = unknown> extends EasyModal<P, V>, Omit<FunctionComponent<P>, ''> {
   [EASY_MODAL_ID]?: Id;
   __typeof_easy_modal__?: symbol;
   __easy_modal_is_single__?: boolean;
