@@ -50,9 +50,9 @@ export function getEasyHoc(Modal: EasyModalHOC<any, any> | Id, where: keyof type
   const hoc = findModal(id);
   if (!hoc) warnText += '\n' + `No Component found in EasyModal.${where}.`;
 
-  const get = id && hoc;
+  const get = Boolean(id && hoc);
 
   if (!get && warnText) console.warn(warnText + '\n' + 'It may have been pre-removed, which is allowed');
 
-  return { id, hoc };
+  return { id, hoc, get };
 }

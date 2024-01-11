@@ -22,7 +22,13 @@ export const Info = EasyModal.create((props: Props) => {
   };
 
   return (
-    <Modal title="resolveOnHide:false" open={modal.visible} onOk={() => handleSave()} onCancel={() => modal.hide(null)}>
+    <Modal
+      title="resolveOnHide:false"
+      open={modal.visible}
+      onOk={() => handleSave()}
+      onCancel={() => modal.hide(null)}
+      afterClose={modal.remove}
+    >
       Greetings: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark：{modal.age}

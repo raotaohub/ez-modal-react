@@ -5,6 +5,7 @@ export enum HowUse {
   remove,
   hide,
   dispatch,
+  register,
 }
 
 export default function usage(type: HowUse) {
@@ -51,6 +52,16 @@ export default function usage(type: HowUse) {
         <EasyModal.Provider>
           <App/>
         </EasyModal.Provider>
+        `;
+      break;
+    case HowUse.register:
+      text = `
+        invalid id , please use valid string or valid number
+    
+        example:
+  
+        EasyModal.register('i am id',...)
+        EasyModal.register(12345,...)
         `;
       break;
     default:

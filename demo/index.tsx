@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import EasyModal from '../src'; /*  */
-import { Layout, Space } from 'antd';
+import { Card, Col, Layout, Row, Space } from 'antd';
 
 /* import comp */
 import ComplexModal from './antdModal/ComplexModal';
@@ -10,6 +10,9 @@ import NoCreate from './antdModal/NoCreateModal';
 import NormalModal from './antdModal/NormalModal';
 import RefCompDemo from './antdModal/RefModal';
 import MultModal from './antdModal/MultModal';
+import RemoveModal from './antdModal/RemoveModal';
+import HideNotRemoveeModal from './antdModal/HideNotRemoveModal';
+import HideModal from './antdModal/HideModal';
 
 const layoutStyle: React.CSSProperties = {
   width: '100vw',
@@ -24,15 +27,30 @@ function App() {
   return (
     <Layout style={layoutStyle}>
       <h2> Ez Modal React </h2>
-      <Space size={[20, 20]} align="start" wrap>
-        <ComplexModal></ComplexModal>
-        <RefCompDemo></RefCompDemo>
-        <NoCreate></NoCreate>
-        <NormalModal></NormalModal>
-        <HideNotResolveModal></HideNotResolveModal>
-        <UpdateModal></UpdateModal>
-        <MultModal></MultModal>
-      </Space>
+
+      <Card
+        title="EasyModal.show({Component,props,{resolveOnHide?:boolean; removeOnHide?:boolean; id?:string|number}})"
+        style={{ width: 920 }}
+      >
+        <Space size={[20, 20]} align="start" wrap>
+          <HideNotResolveModal /> <HideNotRemoveeModal /> <MultModal />
+        </Space>
+      </Card>
+
+      <Card title="EasyModal.update | remove | hide()" style={{ width: 920 }}>
+        <Space size={[20, 20]} align="start" wrap>
+          <UpdateModal /> <RemoveModal /> <HideModal />
+        </Space>
+      </Card>
+
+      <Card title="Ohter Example" style={{ width: 920 }}>
+        <Space size={[20, 20]} align="start" wrap>
+          <ComplexModal></ComplexModal>
+          <RefCompDemo></RefCompDemo>
+          <NoCreate></NoCreate>
+          <NormalModal></NormalModal>
+        </Space>
+      </Card>
     </Layout>
   );
 }

@@ -183,7 +183,7 @@ function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalR
   // Promise Control
   // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#non-null-assertion-operator
   let theResolve!: GenerateTypeInfer<V>;
-  let theReject!: (reason: any) => void; //Reject any, forever.
+  let theReject!: (reason: unknown) => void;
 
   const promise = new Promise<V>((resolve, reject) => {
     theResolve = resolve as typeof theResolve;
@@ -206,14 +206,16 @@ function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = Moda
 ) {
   if (!isValidEasyHOC(ModalOrId) && !isValidId(ModalOrId)) return console.warn(usage(HowUse.update));
 
-  const { id } = getEasyHoc(ModalOrId, 'update');
+  const { id, get } = getEasyHoc(ModalOrId, 'update');
+  if (!get) return;
 
   const originProps = MODAL_REGISTRY[id]?.props || {};
   dispatch<P, V>(updateModal<P, V>(id, { ...originProps, ...props }));
 }
 
 function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
-  const { id, hoc } = getEasyHoc(Modal, 'hide');
+  const { id, hoc, get } = getEasyHoc(Modal, 'hide');
+  if (!get) return;
 
   dispatch<P, V>(hideModal(id));
 
@@ -221,14 +223,14 @@ function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
 
   /* if not single EasyModalHOC, after hide remove it */
   if (!hoc?.Component.__easy_modal_is_single__) {
-    setTimeout(() => {
-      remove(id);
-    }, 300);
+    setTimeout(() => remove(id), 300);
   }
 }
 
 function remove<P, V>(Modal: EasyModalHOC<P, V> | Id) {
-  const { id } = getEasyHoc(Modal, 'remove');
+  const { id, get } = getEasyHoc(Modal, 'remove');
+  if (!get) return;
+
   dispatch<P, V>(removeModal(id));
 }
 
