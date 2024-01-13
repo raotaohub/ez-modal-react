@@ -46,7 +46,7 @@ export const Info = (props: Props) => {
       onCancel={() => props.hide(null)}
       confirmLoading={ing}
     >
-      Greetings: {props.name}!
+      Hello: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark:
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />

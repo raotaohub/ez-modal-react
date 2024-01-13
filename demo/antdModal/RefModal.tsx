@@ -19,7 +19,7 @@ export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRe
 
   return (
     <Modal title="Hello Antd" open={modal.visible}>
-      Greetings: {props.name}!
+      Hello: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark:
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />

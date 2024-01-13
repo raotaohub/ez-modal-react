@@ -23,7 +23,7 @@ export const Info = (props: IProps) => {
 
   return (
     <Modal title="resolveOnHide:false" open={modal.visible} onOk={() => handleSave()} onCancel={() => modal.hide(null)}>
-      Greetings: {props.name}!
+      Hello: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark：{modal.age}
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />

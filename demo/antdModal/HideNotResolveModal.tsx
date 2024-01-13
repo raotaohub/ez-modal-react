@@ -29,7 +29,7 @@ export const Info = EasyModal.create((props: Props) => {
       onCancel={() => modal.hide(null)}
       afterClose={modal.remove}
     >
-      Greetings: {props.name}!
+      Hello: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark：{modal.age}
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />

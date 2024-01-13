@@ -21,7 +21,7 @@ export const NoCreateModal = (props: NoCreateProps) => {
   };
   return (
     <Modal title="Hello Antd" open={modal.visible} onOk={() => handleSave()} onCancel={() => modal.hide(null)} centered>
-      Greetings: {props.name}!
+      Hello: {props.name}!
       <div style={{ padding: '10px 0' }}>
         remark:
         <Input value={remark} onChange={(e) => setRemark(e.target.value)} style={{ width: 180 }} />
