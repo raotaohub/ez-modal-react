@@ -2,11 +2,16 @@
 
 <p><h4 align='center'>ez modal react</h4></p>
 
-This is a easy-to-use modal state management of React. It use React's context.
+<span style="margin-left:32px">The</span> concept of EasyModal is simple: to treat the operations of modals as asynchronous events, managing their lifecycle through Promises. It also provides type inference and constraints.
 
 <p align='center'>English | <a href='./README.zh-CN.md'>简体中文</a> </p>
 
-[![NPM](https://img.shields.io/npm/v/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![Downloads](https://img.shields.io/npm/dm/ez-modal-react.svg)](https://www.npmjs.com/package/ez-modal-react) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/raotaohub/ez-modal-react/blob/main/LICENSE)
+<p align="center">
+<a href="https://www.npmjs.com/package/ez-modal-react" target="__blank"><img src="https://img.shields.io/npm/v/ez-modal-react?color=2B90B6&label=" alt="NPM version"></a>
+<a href="https://www.npmjs.com/package/ez-modal-react" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/ez-modal-react?color=349dbe&label="></a>
+<a href="https://raotaohub.github.io/ez-modal-react-book/en-US" target="__blank"><img src="https://img.shields.io/static/v1?label=&message=docs&color=45b8cd" alt="Docs & Demos"></a>
+<a href="https://raotaohub.github.io/ez-modal-react-book/en-US" target="__blank"><img src="https://img.shields.io/static/v1?label=&message=demos&color=4ec5d4" alt="Themes"></a>
+</p>
 
 ## ✨ Feature
 
@@ -14,9 +19,11 @@ This is a easy-to-use modal state management of React. It use React's context.
 2. Supports **<a href="#typeinfer" title="">return value type inference</a>**,elevate the development experience.
 3. Small size(~1kb after gzip)、easy access non-intrusive、support any UI library.
 
-## 🔨 Let me see
+## 🔨 Documentations
 
-![ez-modal-scenario](assets/ez-modal-scenario.en.png)
+[中文文档](https://raotaohub.github.io/ez-modal-react-book) | [English](https://raotaohub.github.io/ez-modal-react-book/en-US)
+
+[Example](https://raotaohub.github.io/ez-modal-react-book/example) | [codesandbox](https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1)
 
 ## 📦 install
 
@@ -35,8 +42,6 @@ npm install ez-modal-react -S
 ```tsx
 import EasyModal from 'ez-modal-react';
 
-function App() {/* ... */}
-
 ReactDOM.render(
     <EasyModal.Provider> // wrap your main Componet
       <App />
@@ -48,147 +53,40 @@ ReactDOM.render(
 2. **create modal**
 
 ```tsx
-import easyModal from 'ez-modal-react';
+import EasyModal, { InnerModalProps } from 'ez-modal-react';
 
-const InfoModal = EazyModal.create((props) => (
-  <Modal open={props.visible} onOk={props.hide} onCancel={props.hide}></Modal>
+interface IProps extends InnerModalProps<'modal'> {
+  age: number;
+  name: string;
+}
+
+const InfoModal = EazyModal.create((props: IProps) => (
+  <Modal
+    open={props.visible}
+    //(property) hide: (result: 'modal') => void ts(2554)
+    onOk={() => props.hide('modal')}
+    onCancel={() => props.hide(null)}
+    afterClose={props.remove}
+  >
+    <h1>{props.age}</h1>
+    <h1>{props.name}</h1>
+  </Modal>
 ));
 ```
 
 3. **anywhere use it**
 
 ```tsx
-import easyModal from 'ez-modal-react';
-import InfoModal from './InfoModal';
-
-EasyModal.show(InfoModal, { name: 'foo' }).then((resolve) => {
-  console.log(resolve);
-});
+// "The property 'age' is missing in the type '{ name: string; }'... ts(2345)"
+const res = await EasyModal.show(InfoModal, { age: 10 });
+console.log(res); // modal
 ```
-
-- That's the core functionality，Here's the better experience
-
----
-
-## ☀️ More
-
-1. **Inferred the return value type**
-
-Your Component Props should **extends InnerModalProps**,to enable it to derive the correct return value type
-
-```diff
-import EasyModal, { InnerModalProps } from 'ez-modal-react';
-
-+ interface IProps extends InnerModalProps<'modal'/* here*/> {
-+   age: number;
-+   name: string;
-+ }
-
-export const InfoModal = EasyModal.create(
-+ (props: Props) => {
-  return (
-    <Modal
-      title="Hello"
-      open={props.visible}
-      onOk={() => {
-+       props.hide(); //(property) hide: (result: 'modal') => void ts(2554)
-      }}
-      onCancel={() => {
-+      props.hide(null); // accepts null as a parameter,this makes it not have to worry about type errors, which is great to use
-      }}
-    >
-      <h1>{props.age}</h1>
-    </Modal>
-  );
-});
-
-+ // "The property 'age' is missing in the type '{ name: string; }'... ts(2345)"
-EasyModal.show(InfoModal, { name: 'foo' }).then((resolve) => {
-  console.log(resolve); // if everything is in order. we will get 'modal'
-});
-```
-
-2. <a name="use hook" id="usehook">**If you like to use hook**</a>
-
-```diff
-+ interface IProps extends InnerModalProps<'modal'> {
-+   age: number;
-+   name: string;
-+ }
-
-export const InfoModal = EasyModal.create((props: Props) => {
-+  const modal = useModal<Props /* here */>();
-   console.log(modal.props) // current component's props
-+  modal.hide(); // (property) hide: (result: 'modal') => void ts(2554)
-
-  return <Moda>/*...*/</Moda>;
-});
-```
-
-3. <a name="config" id="config">**config default**</a>
-
-> 1. ~~When the modal is hidden, it is remove by default.~~
-> 2. When the modal is hidden, it is resolve by default.
-
-- How to change the default behavior: pass in the third parameter in the open method.
-
-```diff
-EasyModal.open(Component, {},
-+  config:{
-+    resolveOnHide:false,
-~~    removeOnHide:false,~~
-+  }
-);
-```
-
-## 📚 API
-
-```tsx
-const CreatedModal = EasyModal.create(Component); // create EasyModal Modal； return EasyModalHOC
-
-const result = EasyModal.open(CreatedModal, Props); // open CreatedModal Modal； return promise
-
-const result = EasyModal.hide(CreatedModal); // hide CreatedModal Modal； return undefined
-
-props; // Within a component, EasyModal injects additional properties in addition to the user's own parameters
-
-const modal = useModal(); // in CreatedModal useModal；return same as props
-
-type props | modal :
- {
-  id: string; // current Modal id
-  visible: boolean; // current Modal open state
-  hide: function; // hidden current Modal fn
-  remove: function; // remove current Modal fn
-  resolve: function; // resolve current Modal fn
-  reject: function; // reject current Modal fn
-}
-```
-
-- About the difference between useModal and injected props
-
-> 1. The **props** and **useModal()** return values obtained inside the component have the same properties and methods>
-> 2. The 'hide' 'resolve' method of the **useModal()** return value does not have type inference by default like most hooks. You must explicitly pass the props type of the current component to the useModal method.
->    > btw, That's exactly why I did this project, I like to use props directly, but nice-modal-react can't provide it
-
-<a href="#usehook" title="use hook">use hook</a>
-
-## 🎮 Codesandbox Demo
-
-[Demo Link](https://codesandbox.io/p/sandbox/confident-shape-rt7bzr?embed=1)
-
-## ⭐ source of inspiration
-
-1. fhd Inc @xpf
-2. [nice-modal-react](https://github.com/eBay/nice-modal-react)
 
 ## Acknowledgement
 
-Thanks to [SevenOutman (Doma)](https://github.com/SevenOutman) repository building support, I consulted his [aplayer-react](https://github.com/SevenOutman/aplayer-react) project
-
-## ⌨️ Ohter
-
-[Issues](https://github.com/raotaohub/ez-modal-react/issues)
+1. fhd Inc @xpf
+2. [nice-modal-react](https://github.com/eBay/nice-modal-react)
+3. Thanks to [SevenOutman (Doma)](https://github.com/SevenOutman) repository building support, I consulted his [aplayer-react](https://github.com/SevenOutman/aplayer-react) project
 
 ## LICENSE
 
