@@ -84,7 +84,7 @@ console.log(res); // type res:'modal'
 
 ## 鸣谢
 
-1. fhd @xpf
+1. 风火递 @xpf
 2. [nice-modal-react](https://github.com/eBay/nice-modal-react)
 3. 感谢[SevenOutman (Doma)](https://github.com/SevenOutman) 仓库搭建的支持, 我借鉴与参考了他的 [aplayer-react](https://github.com/SevenOutman/aplayer-react) 项目。
 
