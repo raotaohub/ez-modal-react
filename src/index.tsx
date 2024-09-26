@@ -221,8 +221,8 @@ function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
 
   if (hoc?.config?.resolveOnHide) hoc.promise?.resolve(result);
 
-  /* if not single EasyModalHOC, after hide remove it */
-  if (!hoc?.Component.__easy_modal_is_single__) {
+  /* if not single EasyModalHOC and not config.id, after hide remove it. because user only use it once*/
+  if (!hoc?.Component.__easy_modal_is_single__ && !isValidId(hoc?.config?.id)) {
     setTimeout(() => remove(id), 300);
   }
 }
