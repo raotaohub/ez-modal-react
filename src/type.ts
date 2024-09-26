@@ -38,11 +38,7 @@ type innerDispatch = <P, V>(action: EasyModalAction<P, V>) => void;
 
 type ActionPayload<P, V> = {
   id: Id;
-  props?: P;
-  visible?: boolean;
-  promise?: ModalPromise<V>;
-  config?: ItemConfig;
-};
+} & Partial<Omit<EasyModalItem<P, V>, 'id'>>;
 
 type EasyModalAction<P = any, V = any> =
   | { type: 'easy_modal/show'; payload: ActionPayload<P, V> }

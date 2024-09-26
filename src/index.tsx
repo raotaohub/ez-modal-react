@@ -238,8 +238,8 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
   const modals = useContext(ModalContext);
   const contextModalId = useContext(ModalIdContext);
 
-  if (!id) id = contextModalId as Id;
-  if (!id) throw new Error('No modal id found in EasyModal.useModal.');
+  if (!isValidId(id)) id = contextModalId as Id;
+  if (!isValidId(id)) throw new Error('No modal id found in EasyModal.useModal.');
 
   const modalInfo = modals.find((t) => t.id === id) as EasyModalItem<P, V>;
   if (!modalInfo) throw new Error('No modalInfo found in EasyModal.useModal.');
@@ -274,7 +274,7 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
 const EasyModalPlaceholder: React.FC = () => {
   const modals = useContext(ModalContext);
 
-  const validModals = modals.filter((item) => item.id && MODAL_REGISTRY[item.id]); // ensure component is registered
+  const validModals = modals.filter((item) => isValidId(item.id) && MODAL_REGISTRY[item.id]); // ensure component is registered
 
   const toRender = validModals.map((item) => {
     return {

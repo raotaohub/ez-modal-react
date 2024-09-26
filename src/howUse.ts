@@ -29,16 +29,17 @@ export default function usage(type: HowUse) {
             example:
 
             const YourComp = EasyModal.create(Component)
-            EasyModal.show(YourComp,props);
-            EasyModal.update(YourComp,willUpdateProps);
+            EasyModal.show(YourComp, props);
+            EasyModal.update(YourComp, willUpdateProps);
             \n
         2. Please use EasyModal.show(Comp/* EasyModal.create or React Comp */, props, { id: /*here write customId*/ })
             then, use EasyModal.update(id /*pass above customId*/, willUpdateProps)
 
             example:
 
-            const YourComp = EasyModal.show(Component,props,{id: 'i am customId'});
-            EasyModal.update('i am customId',willUpdateProps);
+            const YourComp = EasyModal.create(Component)
+            EasyModal.show(Component, props, { id: 'i am customId' });
+            EasyModal.update('i am customId', willUpdateProps);
 
             `;
       break;

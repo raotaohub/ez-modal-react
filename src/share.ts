@@ -1,4 +1,4 @@
-import EasyModal from '.';
+import EasyModal from './index';
 import { EasyModalHOC, EasyModalItem, Id } from './type';
 export const EASY_MODAL_ID = Symbol.for('easy_modal_id');
 export const EASY_MODAL_HOC_TYPE: symbol = Symbol.for('easy_modal_hoc_type');
@@ -19,7 +19,7 @@ export const getUid = (id?: Id): Id => {
 };
 
 export function isValidId(id: any): id is Id {
-  return (typeof id === 'string' && id !== '') || typeof id === 'number';
+  return (typeof id === 'string' && id !== '') || (typeof id === 'number' && !Number.isNaN(id));
 }
 
 export function isValidEasyHOC(object: any) {
@@ -45,12 +45,12 @@ export function findModal<P, V>(Modal: EasyModalHOC<P, V> | Id) {
 export function getEasyHoc(Modal: EasyModalHOC<any, any> | Id, where: keyof typeof EasyModal) {
   let warnText = '';
   const id = getModalId(Modal);
-  if (!id) warnText = `No id found in EasyModal.${where}`;
+  if (!isValidId(id)) warnText = `No id found in EasyModal.${where}`;
 
   const hoc = findModal(id);
   if (!hoc) warnText += '\n' + `No Component found in EasyModal.${where}.`;
 
-  const get = Boolean(id && hoc);
+  const get = Boolean(hoc);
 
   if (!get && warnText) console.warn(warnText + '\n' + 'It may have been pre-removed, which is allowed');
 
