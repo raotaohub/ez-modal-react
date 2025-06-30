@@ -29,7 +29,7 @@ function App() {
       <h2> Ez Modal React </h2>
 
       <Card
-        title="EasyModal.show({Component,props,{resolveOnHide?:boolean; removeOnHide?:boolean; id?:string|number}})"
+        title="EasyModal.show({Component,props,{resolveOnHide?:boolean; id?:string|number}})"
         style={{ width: 920 }}
       >
         <Space size={[20, 20]} align="start" wrap>

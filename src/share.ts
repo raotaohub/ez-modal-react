@@ -8,6 +8,7 @@ export const MODAL_REGISTRY: Record<
   Id,
   {
     Component: EasyModalHOC<any, any>;
+    refCount: number; // 新增引用计数
   } & Partial<EasyModalItem>
 > = {};
 
@@ -39,7 +40,7 @@ export function findModal<P, V>(Modal: EasyModalHOC<P, V> | Id) {
 
   const find = Object.values(MODAL_REGISTRY).find((item) => item.Component === (Modal as EasyModalHOC<P, V>));
 
-  return find ? find : void 0;
+  return find;
 }
 
 export function getEasyHoc(Modal: EasyModalHOC<any, any> | Id, where: keyof typeof EasyModal) {

@@ -52,7 +52,7 @@ export default function ComplexModal() {
       <Button
         type="primary"
         onClick={async () => {
-          EasyModal.show(UpdateModal, { name: 'happy', age: 19 }, { removeOnHide: false }).then((result) => {
+          EasyModal.show(UpdateModal, { name: 'happy', age: 19 }).then((result) => {
             console.log('show-result:', result);
           });
         }}

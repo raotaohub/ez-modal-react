@@ -6,9 +6,10 @@ export enum HowUse {
   hide,
   dispatch,
   register,
+  equalId,
 }
 
-export default function usage(type: HowUse) {
+export default function usage(type: HowUse, info?: string) {
   let text = '';
   switch (type) {
     case HowUse.show:
@@ -63,6 +64,12 @@ export default function usage(type: HowUse) {
   
         EasyModal.register('i am id',...)
         EasyModal.register(12345,...)
+        `;
+      break;
+    case HowUse.equalId:
+      text = `
+        in EasyModal.show()
+        Encountered two children with the same id, ${info}. id should be unique!
         `;
       break;
     default:

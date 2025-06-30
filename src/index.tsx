@@ -52,6 +52,7 @@ function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, 
           ...action.payload,
         };
       } else {
+        /* TODO 改进 index = -1时 */
         newState.push({
           ...newState[index],
           ...action.payload,
@@ -156,7 +157,7 @@ function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveTy
 
 function register<P, V>(id: Id, Modal: EasyModalHOC<P, V>, props: ModalProps<P, V>) {
   if (!MODAL_REGISTRY[id]) {
-    MODAL_REGISTRY[id] = { Component: Modal, props, id };
+    MODAL_REGISTRY[id] = { Component: Modal, props, id, refCount: 1 };
   }
 }
 
@@ -168,6 +169,35 @@ function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalR
   // Default config
   config.resolveOnHide = config.resolveOnHide ?? true;
   config.id = config.id ?? '';
+
+  // Warning
+  const existedRegistry = MODAL_REGISTRY[config.id];
+
+  if (existedRegistry) {
+    /**
+     * This means that a registered component already exists and they have the same id.
+     */
+    if (isValidEasyHOC(Modal) && existedRegistry.Component !== Modal) {
+      console.warn(usage(HowUse.equalId, String(config.id)));
+    } else if (React.isValidElement(Modal) && isValidId(config.id)) {
+      console.warn(usage(HowUse.equalId, String(config.id)));
+    }
+  }
+
+  if (existedRegistry) {
+    const isSameComponent = isValidEasyHOC(Modal) && existedRegistry.Component === Modal;
+    const isValid = isValidEasyHOC(Modal) || (React.isValidElement(Modal) && isValidId(config.id));
+    if (!isSameComponent && isValid) {
+      console.warn(usage(HowUse.equalId, String(config.id)));
+    }
+  }
+
+
+  if (isValidEasyHOC(Modal)) {
+    if (existedRegistry && existedRegistry.Component !== Modal) console.warn(usage(HowUse.equalId, String(config.id)));
+  } else {
+    if (existedRegistry && isValidId(config.id)) console.warn(usage(HowUse.equalId, String(config.id)));
+  }
 
   // Check & Create
   const _Modal = (isValidEasyHOC(Modal) ? Modal : create<P, V>(Modal as React.ComponentType<P>, false)) as EasyModalHOC<
@@ -222,6 +252,7 @@ function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
   if (hoc?.config?.resolveOnHide) hoc.promise?.resolve(result);
 
   /* if not single EasyModalHOC and not config.id, after hide remove it. because user only use it once*/
+  /* 如果不是单例模式，并且没有配置id，那么在隐藏后300ms删除它，因为用户只使用一次，这不会导致竟态问题 */
   if (!hoc?.Component.__easy_modal_is_single__ && !isValidId(hoc?.config?.id)) {
     setTimeout(() => remove(id), 300);
   }
@@ -274,14 +305,17 @@ export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<
 const EasyModalPlaceholder: React.FC = () => {
   const modals = useContext(ModalContext);
 
-  const validModals = modals.filter((item) => isValidId(item.id) && MODAL_REGISTRY[item.id]); // ensure component is registered
-
-  const toRender = validModals.map((item) => {
-    return {
-      id: item.id,
-      Component: MODAL_REGISTRY[item.id].Component,
-    };
-  });
+  const toRender = useMemo(() =>
+    modals.
+      filter((item) => isValidId(item.id) && MODAL_REGISTRY[item.id]) // ensure component is registered
+      .map((item) => {
+        return {
+          id: item.id,
+          Component: MODAL_REGISTRY[item.id].Component,
+        };
+      }),
+    [modals]
+  )
 
   return (
     <>
