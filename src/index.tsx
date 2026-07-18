@@ -27,6 +27,7 @@ import type {
   ModalPromise,
   ModalProps,
   ModalResolveType,
+  UpdateOptions,
 } from './type';
 export * from './type';
 
@@ -103,7 +104,7 @@ function showModal<P = any, V = any>(
   };
 }
 
-function updateModal<P = any, V = any>(id: Id, props: ModalProps<P, V>): EasyModalAction {
+function updateModal<P = any, V = any>(id: Id, props: Partial<ModalProps<P, V>>): EasyModalAction {
   return {
     type: 'easy_modal/update',
     payload: {
@@ -203,14 +204,24 @@ function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalR
 function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
   ModalOrId: EasyModalHOC<P, V> | Id,
   props: Partial<ModalProps<P, V>> = {} as any,
+  options?: UpdateOptions,
 ) {
   if (!isValidEasyHOC(ModalOrId) && !isValidId(ModalOrId)) return console.warn(usage(HowUse.update));
 
   const { id, get } = getEasyHoc(ModalOrId, 'update');
   if (!get) return;
 
-  const originProps = MODAL_REGISTRY[id]?.props || {};
-  dispatch<P, V>(updateModal<P, V>(id, { ...originProps, ...props }));
+  // Default to merge mode for backward compatibility
+  const shouldMerge = options?.merge !== false;
+
+  if (shouldMerge) {
+    // Merge mode: combine current props with new props (existing behavior)
+    const currentProps = MODAL_REGISTRY[id]?.props || {};
+    dispatch<P, V>(updateModal<P, V>(id, { ...currentProps, ...props }));
+  } else {
+    // Replace mode: only use new props (new feature for Issue #4)
+    dispatch<P, V>(updateModal<P, V>(id, props));
+  }
 }
 
 function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {

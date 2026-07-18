@@ -82,6 +82,58 @@ const res = await EasyModal.show(InfoModal, { name: 'foo' });
 console.log(res); // type res:'modal'
 ```
 
+## 🔄 更新弹窗属性
+
+你可以使用 `update` 函数动态更新弹窗的属性:
+
+### 合并模式 (默认)
+
+默认情况下,`update` 会将新属性与现有属性合并:
+
+```tsx
+// 显示弹窗并传入初始属性
+EasyModal.show(InfoModal, { name: 'Alice', age: 25, fileList: ['file1'] });
+
+// 只更新 name,保留 age 和 fileList
+EasyModal.update(InfoModal, { name: 'Bob' });
+// 结果: { name: 'Bob', age: 25, fileList: ['file1'] }
+```
+
+### 替换模式 (v1.0.5+ 新增)
+
+使用 `{ merge: false }` 完全替换属性:
+
+```tsx
+// 显示弹窗并传入初始属性
+EasyModal.show(InfoModal, { name: 'Alice', age: 25, fileList: ['file1'] });
+
+// 用新属性完全替换所有属性
+EasyModal.update(InfoModal, { name: 'Bob' }, { merge: false });
+// 结果: { name: 'Bob' } - age 和 fileList 被移除
+```
+
+当你需要精确控制更新哪些属性,而不携带之前的值时,这非常有用。
+
+### 使用场景
+
+**表单数据更新:**
+```tsx
+// 保持表单结构,更新加载状态
+EasyModal.update(FormModal, { isLoading: true });
+
+// 完全重置表单
+EasyModal.update(FormModal, { formData: newFormData }, { merge: false });
+```
+
+**文件列表管理:**
+```tsx
+// 添加文件的同时保留其他属性
+EasyModal.update(UploadModal, { files: [...oldFiles, newFile] });
+
+// 替换文件列表配置
+EasyModal.update(UploadModal, { files: newFiles, maxFiles: 1 }, { merge: false });
+```
+
 ## 鸣谢
 
 1. 风火递 @xpf

@@ -26,6 +26,19 @@ type ItemConfig = {
   id?: Id;
 };
 
+/**
+ * Options for the update function
+ */
+type UpdateOptions = {
+  /**
+   * Whether to merge new props with existing props
+   * - true (default): Merge new props with current props
+   * - false: Replace all props with new props only
+   * @default true
+   */
+  merge?: boolean;
+};
+
 type EasyModalItem<P = any, V = any> = {
   id: Id;
   props: P;
@@ -92,4 +105,5 @@ export type {
   GenerateTypeInfer,
   InnerModalProps,
   Id,
+  UpdateOptions,
 };

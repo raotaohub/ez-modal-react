@@ -25,6 +25,28 @@
 * version 1.0.0 ([62cc741](https://github.com/raotaohub/ez-modal-react/commit/62cc741e6a9da12d9214ebfcce683cca9bee9b92))
 
 
+## 1.0.6-alpha.0 (2026-07-18)
+
+### Features
+
+* **update:** Add merge/replace mode for update function ([Issue #4](https://github.com/raotaohub/ez-modal-react/issues/4))
+  - Added `UpdateOptions` type with `merge` parameter
+  - Default behavior (merge: true) maintains backward compatibility
+  - New replace mode (merge: false) allows precise control over props updates
+  - Useful for scenarios where you want to completely replace modal props without carrying over previous values
+
+### Bug Fixes
+
+* Fix update function to support partial props updates with better type safety
+* Update TypeScript types to properly support `Partial<ModalProps>` in update function
+
+### Documentation
+
+* Add comprehensive examples for update function usage
+* Add use case examples for form data and file list management
+* Update both English and Chinese documentation
+
+
 
 ## 1.0.4 (2024-04-28)
 

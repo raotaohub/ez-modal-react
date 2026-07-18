@@ -82,6 +82,58 @@ const res = await EasyModal.show(InfoModal, { age: 10 });
 console.log(res); // modal
 ```
 
+## 🔄 Update Modal Props
+
+You can update modal props dynamically using the `update` function:
+
+### Merge Mode (Default)
+
+By default, `update` merges new props with existing props:
+
+```tsx
+// Show modal with initial props
+EasyModal.show(InfoModal, { name: 'Alice', age: 25, fileList: ['file1'] });
+
+// Update only name, keeps age and fileList
+EasyModal.update(InfoModal, { name: 'Bob' });
+// Result: { name: 'Bob', age: 25, fileList: ['file1'] }
+```
+
+### Replace Mode (New in v1.0.5+)
+
+Use `{ merge: false }` to completely replace props:
+
+```tsx
+// Show modal with initial props
+EasyModal.show(InfoModal, { name: 'Alice', age: 25, fileList: ['file1'] });
+
+// Replace all props with new ones
+EasyModal.update(InfoModal, { name: 'Bob' }, { merge: false });
+// Result: { name: 'Bob' } - age and fileList are removed
+```
+
+This is useful when you want precise control over which props to update without carrying over previous values.
+
+### Use Cases
+
+**Form Data Updates:**
+```tsx
+// Keep form structure, update loading state
+EasyModal.update(FormModal, { isLoading: true });
+
+// Reset form completely
+EasyModal.update(FormModal, { formData: newFormData }, { merge: false });
+```
+
+**File List Management:**
+```tsx
+// Add files while keeping other props
+EasyModal.update(UploadModal, { files: [...oldFiles, newFile] });
+
+// Replace file list configuration
+EasyModal.update(UploadModal, { files: newFiles, maxFiles: 1 }, { merge: false });
+```
+
 ## Acknowledgement
 
 1. fhd Inc @xpf
