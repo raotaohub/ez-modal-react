@@ -1,6 +1,6 @@
 {
   "name": "ez-modal-react",
-  "version": "1.0.6-alpha.0",
+  "version": "2.0.0-alpha.0",
   "description": "a easy modal state manager for React.",
   "keywords": [
     "react modal",
@@ -23,7 +23,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     }
   },
   "main": "./dist/index.js",
@@ -38,9 +39,11 @@
     "clean": "rimraf node_modules",
     "dev": "vite",
     "format": "prettier --write .",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run verify:package",
     "test": "vitest run --passWithNoTests",
-    "test:coverage": "vitest run --passWithNoTests --coverage"
+    "test:coverage": "vitest run --passWithNoTests --coverage",
+    "test:modern": "node scripts/modern-react-smoke.cjs",
+    "verify:package": "node scripts/verify-package.cjs"
   },
   "resolutions": {
     "@types/react": "^16.8.0",
@@ -50,6 +53,7 @@
     "@testing-library/react": "^14.0.0",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
+    "@types/use-sync-external-store": "1.5.0",
     "@typescript-eslint/eslint-plugin": "^5.59.5",
     "@typescript-eslint/parser": "^5.59.5",
     "@vitejs/plugin-react": "^4.0.0",
@@ -69,12 +73,14 @@
     "vitest": "^0.31.0"
   },
   "peerDependencies": {
-    "react": ">16.8.0",
-    "react-dom": ">16.8.0",
-    "typescript": ">4.0.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "publishConfig": {
     "access": "public"
   },
-  "title": "Ez Modal React"
+  "title": "Ez Modal React",
+  "dependencies": {
+    "use-sync-external-store": "1.6.0"
+  }
 }

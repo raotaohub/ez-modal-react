@@ -1,3 +1,31 @@
+## 2.0.0-alpha.0 (2026-07-19)
+
+### Next.js and React
+
+- Add a preserved `"use client"` package boundary for Next.js App Router and Pages Router.
+- Keep React 16.8+ compatibility by publishing the classic JSX runtime.
+- Replace the global `JSX.Element` declaration with `ReactElement | null` for modern React type compatibility.
+- Add a default ESM export condition and package artifact verification before publishing.
+
+### State Architecture
+
+- Replace reducer side effects and the process-wide modal registry with Provider-scoped stores.
+- Add `createEasyModal()` for isolated roots, micro-frontends, tests, and nested applications.
+- Keep the default `EasyModal.create/show/update/hide/remove` and named `useModal` APIs.
+- Reject cross-manager modal use and stale calls before mount, after unmount, or during server rendering.
+- Reject pending modal promises with `EasyModalProviderUnmountedError` when their Provider is disposed.
+- Scope delayed removal timers to their owning Provider and cancel them during disposal.
+
+### Testing
+
+- Replace registry simulations with real React integration tests.
+- Cover Promise resolve/reject, `resolveOnHide`, delayed removal, custom IDs, update merge/replace, manager isolation, and Provider lifecycle.
+
+### Breaking Behavior
+
+- Imperative methods now require a mounted matching Provider and a browser environment.
+- Multiple Providers should use separate `createEasyModal()` instances; sharing one manager across Providers emits a warning.
+
 ## 1.0.5 (2024-09-26)
 
 

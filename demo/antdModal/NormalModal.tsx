@@ -1,5 +1,5 @@
 import { Modal, Button } from 'antd';
-import EasyModal, { useModal } from '../../src';
+import EasyModal from '../../src';
 
 // no type
 

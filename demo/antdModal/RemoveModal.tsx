@@ -1,9 +1,14 @@
 import { Modal, Button } from 'antd';
 import EasyModal from '../../src';
+import { InnerModalProps } from '../../src/type';
+
+interface Props extends InnerModalProps {
+  name?: string;
+}
 
 // no type
 
-export const Info = EasyModal.create((props) => {
+export const Info = EasyModal.create((props: Props) => {
   // use hooks
   // const modal = useModal();
   // function handle() {

@@ -15,9 +15,11 @@
 
 ## ✨ 特性
 
-1. 基于 **Promise** 封装，灵活易用可减少繁琐的状态管理。
-2. \>=React 16.8，支持 <a href="#typeinfer" title="使用返回值类型推导">返回值类型推导</a>，和类型校验。
-3. 体积小(~1kb gzip)、易接入、无入侵性、支持任意 UI 库。
+1. 基于 **Promise** 管理弹窗生命周期，减少重复的可见状态管理。
+2. 支持弹窗属性约束和 Promise 返回值类型推导。
+3. 支持 Next.js Pages Router 和 App Router，发布产物自带 `"use client"` 边界。
+4. Provider 级状态隔离，并可通过 `createEasyModal()` 创建独立管理器。
+5. React 16.8+、体积小、无侵入性、支持任意 UI 库。
 
 ## 🔨 Documentations
 
@@ -28,11 +30,11 @@
 ## 📦 安装
 
 ```shell
-# with yarn
-yarn add ez-modal-react -S
+# 2.0 alpha
+npm install ez-modal-react@2.0.0-alpha.0
 
-# or with npm
-npm install ez-modal-react -S
+# 或者
+yarn add ez-modal-react@2.0.0-alpha.0
 ```
 
 ## 🚀 使用方式
@@ -82,6 +84,66 @@ const res = await EasyModal.show(InfoModal, { name: 'foo' });
 console.log(res); // type res:'modal'
 ```
 
+## Next.js
+
+发布入口已经声明为 Client Component，因此同时支持 Pages Router 和 App Router。`show`、`update`、`hide`、`remove` 都是客户端方法，只能在事件处理函数或 Effect 中调用，不能在 Server Component 或 Server Action 中调用。
+
+### App Router
+
+```tsx
+// app/providers.tsx
+'use client';
+
+import type { PropsWithChildren } from 'react';
+import EasyModal from 'ez-modal-react';
+
+export function Providers({ children }: PropsWithChildren) {
+  return <EasyModal.Provider>{children}</EasyModal.Provider>;
+}
+```
+
+```tsx
+// app/layout.tsx（Server Component）
+import { Providers } from './providers';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="zh-CN">
+      <body><Providers>{children}</Providers></body>
+    </html>
+  );
+}
+```
+
+### Pages Router
+
+在 `pages/_app.tsx` 中使用 `EasyModal.Provider` 包裹 `Component` 即可。
+
+## 独立管理器
+
+默认导出保持向后兼容。多 React 根节点、微前端、测试隔离或嵌套应用应为每个 Provider 创建独立管理器：
+
+```tsx
+import { createEasyModal } from 'ez-modal-react';
+
+export const adminModal = createEasyModal();
+
+<adminModal.Provider>
+  <AdminApp />
+</adminModal.Provider>;
+
+adminModal.show(AdminDialog, props);
+```
+
+由某个管理器创建的 Modal 必须通过同一个管理器操作。为了让命令式 API 的路由始终确定，一个管理器只挂载一个 Provider。
+
+## 2.0 Alpha 迁移说明
+
+- 原有 `EasyModal.show()` 等默认单例 API 继续支持。
+- 在 Provider 挂载前、完全销毁后或服务端渲染期间调用命令式方法，现在会抛出明确错误，不再写入陈旧的全局状态。
+- Provider 销毁时，尚未完成的弹窗 Promise 会通过 `EasyModalProviderUnmountedError` 拒绝。
+- 应用需要多个 Provider 时，使用 `createEasyModal()` 创建隔离实例。
+
 ## 🔄 更新弹窗属性
 
 你可以使用 `update` 函数动态更新弹窗的属性:
@@ -99,7 +161,7 @@ EasyModal.update(InfoModal, { name: 'Bob' });
 // 结果: { name: 'Bob', age: 25, fileList: ['file1'] }
 ```
 
-### 替换模式 (v1.0.5+ 新增)
+### 替换模式 (v1.0.6+)
 
 使用 `{ merge: false }` 完全替换属性:
 

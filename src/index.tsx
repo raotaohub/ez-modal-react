@@ -5,342 +5,445 @@
  * https://opensource.org/licenses/MIT.
  *********************************************************** */
 
-import React, { useCallback, useContext, useMemo, useReducer, useRef } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any -- heterogeneous modal records are erased inside the store */
+
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef } from 'react';
+import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import usage, { HowUse } from './howUse';
-import {
-  EASY_MODAL_HOC_TYPE,
-  findModal,
-  getEasyHoc,
-  getModalId,
-  isValidEasyHOC,
-  isValidId,
-  MODAL_REGISTRY,
-} from './share';
+import { EASY_MODAL_HOC_TYPE, EASY_MODAL_ID, getModalId, isValidEasyHOC, isValidId } from './share';
 import type {
-  EasyModalAction,
   EasyModalHOC,
   EasyModalItem,
+  EasyModalManager,
   GenerateTypeInfer,
   Id,
-  innerDispatch,
   InnerModalProps,
+  ItemConfig,
   ModalPromise,
   ModalProps,
   ModalResolveType,
+  ProviderProps,
   UpdateOptions,
 } from './type';
+
 export * from './type';
 
-const ModalContext = React.createContext<EasyModalItem[]>([]);
-const ModalIdContext = React.createContext<Id | null>(null);
+export class EasyModalProviderUnmountedError extends Error {
+  constructor() {
+    super('The EasyModal Provider was unmounted before the modal promise settled.');
+    this.name = 'EasyModalProviderUnmountedError';
+  }
+}
 
-let dispatch: innerDispatch = () => {
-  throw new Error(usage(HowUse.dispatch));
+type ModalRecord = EasyModalItem<any, any> & {
+  Component: EasyModalHOC<any, any>;
 };
 
-function reducer<P, V>(state: EasyModalItem<P, V>[], action: EasyModalAction<P, V>): EasyModalItem<P, V>[] {
-  const { id, ...rest } = action.payload;
-  const newState = [...state];
-  const index = newState.findIndex((v) => v.id === id);
+type ModalStore = {
+  getSnapshot: () => ReadonlyArray<ModalRecord>;
+  assertAvailable: () => void;
+  subscribe: (listener: () => void) => () => void;
+  registerPromise: (disposePromise: () => void) => () => void;
+  findById: (id: Id) => ModalRecord | undefined;
+  findByComponent: (Component: EasyModalHOC<any, any>) => ModalRecord | undefined;
+  show: (modal: ModalRecord) => void;
+  update: (id: Id, updater: (modal: ModalRecord) => ModalRecord) => void;
+  remove: (id: Id) => void;
+  scheduleRemove: (id: Id, promise: ModalPromise<any>, callback: () => void) => void;
+  dispose: () => void;
+};
 
-  if (MODAL_REGISTRY[id]) Object.assign(MODAL_REGISTRY[id], { ...rest });
+const canUseDOM = () => typeof window !== 'undefined' && typeof window.document !== 'undefined';
+const useIsomorphicLayoutEffect = canUseDOM() ? useLayoutEffect : useEffect;
 
-  switch (action.type) {
-    case 'easy_modal/show': {
-      if (index > -1) {
-        newState[index] = {
-          ...newState[index],
-          ...action.payload,
-        };
-      } else {
-        newState.push({
-          ...newState[index],
-          ...action.payload,
-        });
+function createModalStore(): ModalStore {
+  let snapshot: ModalRecord[] = [];
+  let disposed = false;
+  const listeners = new Set<() => void>();
+  const pendingPromises = new Set<() => void>();
+  const removeTimers = new Map<Id, ReturnType<typeof setTimeout>>();
+
+  const assertAvailable = () => {
+    if (disposed) throw new Error('This EasyModal Provider has been unmounted and its store is no longer available.');
+  };
+
+  const publish = (nextSnapshot: ModalRecord[]) => {
+    assertAvailable();
+    snapshot = nextSnapshot;
+    listeners.forEach((listener) => listener());
+  };
+
+  const clearRemoveTimer = (id: Id) => {
+    const timer = removeTimers.get(id);
+    if (timer) clearTimeout(timer);
+    removeTimers.delete(id);
+  };
+
+  return {
+    getSnapshot: () => snapshot,
+    assertAvailable,
+    subscribe: (listener) => {
+      if (disposed) return () => undefined;
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    registerPromise: (disposePromise) => {
+      assertAvailable();
+      pendingPromises.add(disposePromise);
+      return () => pendingPromises.delete(disposePromise);
+    },
+    findById: (id) => {
+      assertAvailable();
+      return snapshot.find((modal) => modal.id === id);
+    },
+    findByComponent: (Component) => {
+      assertAvailable();
+      return snapshot.find((modal) => modal.Component === Component);
+    },
+    show: (modal) => {
+      assertAvailable();
+      clearRemoveTimer(modal.id);
+      const index = snapshot.findIndex((item) => item.id === modal.id);
+      if (index < 0) {
+        publish([...snapshot, modal]);
+        return;
       }
-      break;
-    }
 
-    case 'easy_modal/update': {
-      newState[index] = {
-        ...newState[index],
-        ...action.payload,
-      };
-      break;
-    }
+      const nextSnapshot = [...snapshot];
+      nextSnapshot[index] = modal;
+      publish(nextSnapshot);
+    },
+    update: (id, updater) => {
+      assertAvailable();
+      const index = snapshot.findIndex((modal) => modal.id === id);
+      if (index < 0) return;
 
-    case 'easy_modal/hide': {
-      newState[index] = {
-        ...newState[index],
-        ...action.payload,
-      };
-      break;
-    }
-
-    case 'easy_modal/remove': {
-      newState.splice(index, 1);
-      delete MODAL_REGISTRY[id];
-      break;
-    }
-  }
-  return newState;
+      const nextSnapshot = [...snapshot];
+      nextSnapshot[index] = updater(snapshot[index]);
+      publish(nextSnapshot);
+    },
+    remove: (id) => {
+      assertAvailable();
+      clearRemoveTimer(id);
+      const nextSnapshot = snapshot.filter((modal) => modal.id !== id);
+      if (nextSnapshot.length !== snapshot.length) publish(nextSnapshot);
+    },
+    scheduleRemove: (id, promise, callback) => {
+      assertAvailable();
+      clearRemoveTimer(id);
+      const timer = setTimeout(() => {
+        removeTimers.delete(id);
+        const current = snapshot.find((modal) => modal.id === id);
+        if (current && current.promise === promise && !current.visible) callback();
+      }, 300);
+      removeTimers.set(id, timer);
+    },
+    dispose: () => {
+      if (disposed) return;
+      disposed = true;
+      removeTimers.forEach((timer) => clearTimeout(timer));
+      removeTimers.clear();
+      listeners.clear();
+      snapshot = [];
+      const disposePromises = Array.from(pendingPromises);
+      pendingPromises.clear();
+      disposePromises.forEach((disposePromise) => disposePromise());
+    },
+  };
 }
 
-function showModal<P = any, V = any>(
-  id: Id,
-  props: ModalProps<P, V>,
-  promise: ModalPromise<V>,
-  config: EasyModalItem<P, V>['config'],
-): EasyModalAction {
-  return {
-    type: 'easy_modal/show',
-    payload: {
+export function createEasyModal(): EasyModalManager {
+  const managerIdentity = {};
+  const ModalContext = React.createContext<ReadonlyArray<EasyModalItem>>([]);
+  const ModalRecordContext = React.createContext<ReadonlyArray<ModalRecord>>([]);
+  const ModalStoreContext = React.createContext<ModalStore | null>(null);
+  const ModalIdContext = React.createContext<Id | null>(null);
+  const mountedStores = new Set<ModalStore>();
+  const disposalTimers = new Map<ModalStore, ReturnType<typeof setTimeout>>();
+  let activeStore: ModalStore | null = null;
+  let warnedAboutMultipleProviders = false;
+
+  const activateStore = (store: ModalStore) => {
+    const disposalTimer = disposalTimers.get(store);
+    if (disposalTimer) clearTimeout(disposalTimer);
+    disposalTimers.delete(store);
+    store.assertAvailable();
+    mountedStores.add(store);
+    activeStore = store;
+
+    if (mountedStores.size > 1 && !warnedAboutMultipleProviders) {
+      warnedAboutMultipleProviders = true;
+      console.warn(
+        'Multiple Providers are using the same EasyModal manager. Create isolated managers with createEasyModal() for deterministic routing.',
+      );
+    }
+  };
+
+  const deactivateStore = (store: ModalStore) => {
+    mountedStores.delete(store);
+    const previousTimer = disposalTimers.get(store);
+    if (previousTimer) clearTimeout(previousTimer);
+    const disposalTimer = setTimeout(() => {
+      disposalTimers.delete(store);
+      store.dispose();
+      if (activeStore === store) {
+        const remainingStores = Array.from(mountedStores);
+        activeStore = remainingStores[remainingStores.length - 1] ?? null;
+      }
+    }, 0);
+    disposalTimers.set(store, disposalTimer);
+  };
+
+  const requireStore = (method: string): ModalStore => {
+    if (!canUseDOM()) {
+      throw new Error(`EasyModal.${method} is client-only and cannot be called during server rendering.`);
+    }
+    if (!activeStore) throw new Error(usage(HowUse.dispatch));
+    return activeStore;
+  };
+
+  const assertModalOwner = (Modal: EasyModalHOC<any, any>) => {
+    if (Modal.__easy_modal_manager__ && Modal.__easy_modal_manager__ !== managerIdentity) {
+      throw new Error(
+        'This modal was created by another EasyModal manager. Use the Provider and methods from the same createEasyModal() instance.',
+      );
+    }
+  };
+
+  const findModal = (store: ModalStore, ModalOrId: EasyModalHOC<any, any> | Id) => {
+    if (isValidId(ModalOrId)) return store.findById(ModalOrId);
+    assertModalOwner(ModalOrId);
+    const id = ModalOrId[EASY_MODAL_ID];
+    return (isValidId(id) ? store.findById(id) : undefined) ?? store.findByComponent(ModalOrId);
+  };
+
+  const getModal = (store: ModalStore, ModalOrId: EasyModalHOC<any, any> | Id, method: string) => {
+    const modal = findModal(store, ModalOrId);
+    if (!modal) {
+      console.warn(`No Component found in EasyModal.${method}.\nIt may have been pre-removed, which is allowed`);
+    }
+    return modal;
+  };
+
+  const removeFromStore = (store: ModalStore, ModalOrId: EasyModalHOC<any, any> | Id) => {
+    const modal = getModal(store, ModalOrId, 'remove');
+    if (modal) store.remove(modal.id);
+  };
+
+  const hideInStore = <V,>(store: ModalStore, ModalOrId: EasyModalHOC<any, V> | Id, result?: V | null) => {
+    const modal = getModal(store, ModalOrId, 'hide');
+    if (!modal) return;
+
+    store.update(modal.id, (current) => ({ ...current, visible: false }));
+    if (modal.config.resolveOnHide) modal.promise.resolve(result);
+
+    if (!modal.Component.__easy_modal_is_single__ && !isValidId(modal.config.id)) {
+      store.scheduleRemove(modal.id, modal.promise, () => removeFromStore(store, modal.id));
+    }
+  };
+
+  const useManagerModal = <
+    P extends ModalProps<P, V>,
+    V extends ModalResolveType<P> = ModalResolveType<P>,
+  >(
+    id?: Id,
+  ): Readonly<P & InnerModalProps<V>> => {
+    const modals = useContext(ModalRecordContext);
+    const store = useContext(ModalStoreContext);
+    const contextModalId = useContext(ModalIdContext);
+    const modalId = isValidId(id) ? id : contextModalId;
+
+    if (!store) throw new Error('EasyModal.useModal must be used inside its matching EasyModal.Provider.');
+    if (!isValidId(modalId)) throw new Error('No modal id found in EasyModal.useModal.');
+
+    const modalInfo = modals.find((modal) => modal.id === modalId) as ModalRecord | undefined;
+    if (!modalInfo) throw new Error('No modalInfo found in EasyModal.useModal.');
+
+    const hideCallback: GenerateTypeInfer<V> = useCallback(
+      (result?: V | null) => hideInStore<V>(store, modalId, result),
+      [store, modalId],
+    ) as GenerateTypeInfer<V>;
+
+    const removeCallback = useCallback(() => removeFromStore(store, modalId), [store, modalId]);
+    const args = {
+      ...modalInfo.props,
+      ...modalInfo.promise,
+      id: modalId,
+      visible: modalInfo.visible,
+      config: modalInfo.config,
+      hide: hideCallback,
+      remove: removeCallback,
+    } as P & InnerModalProps<V>;
+
+    return Object.freeze(args);
+  };
+
+  const create = <
+    P extends ModalProps<P, V> = InnerModalProps,
+    V extends ModalResolveType<P> = ModalResolveType<P>,
+  >(
+    Comp: React.ComponentType<P>,
+    single = true,
+  ): EasyModalHOC<P, V> => {
+    if (!Comp) throw new Error(usage(HowUse.create));
+
+    const EasyModalHOCWrapper = (({ id }: { id: Id }) => {
+      const inject = useManagerModal<P, V>(id);
+      return (
+        <ModalIdContext.Provider value={id}>
+          <Comp {...(inject as P)} />
+        </ModalIdContext.Provider>
+      );
+    }) as unknown as EasyModalHOC<P, V>;
+
+    EasyModalHOCWrapper.displayName = `EasyModal(${Comp.displayName || Comp.name || 'Component'})`;
+    EasyModalHOCWrapper.__typeof_easy_modal__ = EASY_MODAL_HOC_TYPE;
+    EasyModalHOCWrapper.__easy_modal_is_single__ = single;
+    EasyModalHOCWrapper.__easy_modal_manager__ = managerIdentity;
+    return EasyModalHOCWrapper;
+  };
+
+  const show = <P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
+    Modal: EasyModalHOC<P, V> | React.ComponentType<P>,
+    props: ModalProps<P, V> = {} as ModalProps<P, V>,
+    config: ItemConfig = {},
+  ): Promise<V> => {
+    const store = requireStore('show');
+    const ModalComponent = (isValidEasyHOC(Modal)
+      ? (Modal as EasyModalHOC<P, V>)
+      : create<P, V>(Modal as React.ComponentType<P>, false)) as EasyModalHOC<P, V>;
+    assertModalOwner(ModalComponent);
+
+    const normalizedConfig: ItemConfig = {
+      ...config,
+      resolveOnHide: config.resolveOnHide ?? true,
+      id: config.id ?? '',
+    };
+    const id = getModalId(ModalComponent, normalizedConfig.id);
+
+    let settled = false;
+    let unregisterPromise: () => void = () => undefined;
+    let nativeResolve!: (value: V | PromiseLike<V>) => void;
+    let nativeReject!: (reason?: any) => void;
+    const result = new Promise<V>((resolve, reject) => {
+      nativeResolve = resolve;
+      nativeReject = reject;
+    });
+    // Keep ignored modal promises from becoming unhandled when their Provider is unmounted.
+    void result.catch(() => undefined);
+
+    const resolvePromise = ((value?: V | null) => {
+      if (settled) return;
+      settled = true;
+      unregisterPromise();
+      nativeResolve(value as V);
+    }) as GenerateTypeInfer<V>;
+    const rejectPromise = (reason?: any) => {
+      if (settled) return;
+      settled = true;
+      unregisterPromise();
+      nativeReject(reason);
+    };
+
+    unregisterPromise = store.registerPromise(() => rejectPromise(new EasyModalProviderUnmountedError()));
+    store.show({
       id,
+      Component: ModalComponent,
       props,
-      promise,
-      config,
+      promise: { resolve: resolvePromise, reject: rejectPromise },
+      config: normalizedConfig,
       visible: true,
-    },
+    });
+    return result;
   };
-}
 
-function updateModal<P = any, V = any>(id: Id, props: Partial<ModalProps<P, V>>): EasyModalAction {
-  return {
-    type: 'easy_modal/update',
-    payload: {
-      id,
-      props,
-    },
+  const update = <P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
+    ModalOrId: EasyModalHOC<P, V> | Id,
+    props: Partial<ModalProps<P, V>> = {},
+    options?: UpdateOptions,
+  ) => {
+    if (!isValidEasyHOC(ModalOrId) && !isValidId(ModalOrId)) {
+      console.warn(usage(HowUse.update));
+      return;
+    }
+
+    const store = requireStore('update');
+    const modal = getModal(store, ModalOrId, 'update');
+    if (!modal) return;
+
+    store.update(modal.id, (current) => ({
+      ...current,
+      props: options?.merge === false ? props : { ...current.props, ...props },
+    }));
   };
-}
 
-function hideModal(id: Id): EasyModalAction {
-  return {
-    type: 'easy_modal/hide',
-    payload: {
-      id,
-      visible: false,
-    },
+  const hide = <P, V>(ModalOrId: EasyModalHOC<P, V> | Id, result?: V | null) => {
+    hideInStore(requireStore('hide'), ModalOrId, result);
   };
-}
 
-function removeModal(id: Id): EasyModalAction {
-  return {
-    type: 'easy_modal/remove',
-    payload: {
-      id,
-    },
+  const remove = <P, V>(ModalOrId: EasyModalHOC<P, V> | Id) => {
+    removeFromStore(requireStore('remove'), ModalOrId);
   };
-}
 
-function create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveType<P>>(
-  Comp: React.ComponentType<P>,
-  single = true,
-): EasyModalHOC<P, V> {
-  if (!Comp) throw new Error(usage(HowUse.create));
-  const EasyModalHOCWrapper: EasyModalHOC<P, V> = ({ id }) => {
-    const inject = useModal<P>(id);
+  const StoreActivator: React.FC<{ store: ModalStore }> = ({ store }) => {
+    useIsomorphicLayoutEffect(() => {
+      activateStore(store);
+      return () => deactivateStore(store);
+    }, [store]);
+    return null;
+  };
+  StoreActivator.displayName = 'EasyModalStoreActivator';
 
-    EasyModalHOCWrapper.displayName = 'EasyModalHOCWrapper' + id;
-
+  const EasyModalPlaceholder: React.FC = () => {
+    const modals = useContext(ModalRecordContext);
     return (
-      <ModalIdContext.Provider value={id}>
-        <Comp {...inject} />
-      </ModalIdContext.Provider>
+      <>
+        {modals.map((modal) => (
+          <modal.Component key={modal.id} id={modal.id} />
+        ))}
+      </>
     );
   };
+  EasyModalPlaceholder.displayName = 'EasyModalPlaceholder';
 
-  EasyModalHOCWrapper.__typeof_easy_modal__ = EASY_MODAL_HOC_TYPE;
-  EasyModalHOCWrapper.__easy_modal_is_single__ = single;
-  return EasyModalHOCWrapper;
-}
+  const Provider: React.FC<ProviderProps> = ({ children }) => {
+    const storeRef = useRef<ModalStore>();
+    if (!storeRef.current) storeRef.current = createModalStore();
+    const store = storeRef.current;
+    const modals = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
 
-function register<P, V>(id: Id, Modal: EasyModalHOC<P, V>, props: ModalProps<P, V>) {
-  if (!MODAL_REGISTRY[id]) {
-    MODAL_REGISTRY[id] = { Component: Modal, props, id };
-  }
-}
-
-function show<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
-  Modal: EasyModalHOC<P, V>,
-  props: ModalProps<P, V> = {} as any,
-  config: EasyModalItem<P, V>['config'] = {},
-) {
-  // Default config
-  config.resolveOnHide = config.resolveOnHide ?? true;
-  config.id = config.id ?? '';
-
-  // Check & Create
-  const _Modal = (isValidEasyHOC(Modal) ? Modal : create<P, V>(Modal as React.ComponentType<P>, false)) as EasyModalHOC<
-    P,
-    V
-  >; /* `as` tell ts that _Modal's type */
-
-  // Find & Register
-  const id = getModalId<P, V>(_Modal, config.id);
-  const find = findModal<P, V>(_Modal) ?? findModal<P, V>(id);
-  if (!find) register<P, V>(id, _Modal, props);
-
-  // Promise Control
-  // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#non-null-assertion-operator
-  let theResolve!: GenerateTypeInfer<V>;
-  let theReject!: (reason: unknown) => void;
-
-  const promise = new Promise<V>((resolve, reject) => {
-    theResolve = resolve as typeof theResolve;
-    theReject = reject;
-  });
-
-  const modalPromise: ModalPromise<V> = {
-    resolve: theResolve,
-    reject: theReject,
+    return (
+      <ModalStoreContext.Provider value={store}>
+        <ModalContext.Provider value={modals}>
+          <ModalRecordContext.Provider value={modals}>
+            <StoreActivator store={store} />
+            {children}
+            <EasyModalPlaceholder />
+          </ModalRecordContext.Provider>
+        </ModalContext.Provider>
+      </ModalStoreContext.Provider>
+    );
   };
+  Provider.displayName = 'EasyModalProvider';
 
-  dispatch<P, V>(showModal<P, V>(id, props, modalPromise, config));
-  /* Think Return More */
-  return promise;
-}
-
-function update<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(
-  ModalOrId: EasyModalHOC<P, V> | Id,
-  props: Partial<ModalProps<P, V>> = {} as any,
-  options?: UpdateOptions,
-) {
-  if (!isValidEasyHOC(ModalOrId) && !isValidId(ModalOrId)) return console.warn(usage(HowUse.update));
-
-  const { id, get } = getEasyHoc(ModalOrId, 'update');
-  if (!get) return;
-
-  // Default to merge mode for backward compatibility
-  const shouldMerge = options?.merge !== false;
-
-  if (shouldMerge) {
-    // Merge mode: combine current props with new props (existing behavior)
-    const currentProps = MODAL_REGISTRY[id]?.props || {};
-    dispatch<P, V>(updateModal<P, V>(id, { ...currentProps, ...props }));
-  } else {
-    // Replace mode: only use new props (new feature for Issue #4)
-    dispatch<P, V>(updateModal<P, V>(id, props));
-  }
-}
-
-function hide<P, V>(Modal: EasyModalHOC<P, V> | Id, result?: V | null) {
-  const { id, hoc, get } = getEasyHoc(Modal, 'hide');
-  if (!get) return;
-
-  dispatch<P, V>(hideModal(id));
-
-  if (hoc?.config?.resolveOnHide) hoc.promise?.resolve(result);
-
-  /* if not single EasyModalHOC and not config.id, after hide remove it. because user only use it once*/
-  if (!hoc?.Component.__easy_modal_is_single__ && !isValidId(hoc?.config?.id)) {
-    setTimeout(() => remove(id), 300);
-  }
-}
-
-function remove<P, V>(Modal: EasyModalHOC<P, V> | Id) {
-  const { id, get } = getEasyHoc(Modal, 'remove');
-  if (!get) return;
-
-  dispatch<P, V>(removeModal(id));
-}
-
-export function useModal<P extends ModalProps<P, V>, V extends ModalResolveType<P> = ModalResolveType<P>>(id?: Id) {
-  const modals = useContext(ModalContext);
-  const contextModalId = useContext(ModalIdContext);
-
-  if (!isValidId(id)) id = contextModalId as Id;
-  if (!isValidId(id)) throw new Error('No modal id found in EasyModal.useModal.');
-
-  const modalInfo = modals.find((t) => t.id === id) as EasyModalItem<P, V>;
-  if (!modalInfo) throw new Error('No modalInfo found in EasyModal.useModal.');
-
-  const { props, promise, config, visible } = modalInfo as EasyModalItem<P, V>;
-
-  const modalId: Id = id;
-
-  const hideCallback: GenerateTypeInfer<V> = useCallback(
-    (result?: V | null) => {
-      hide(modalId, result);
-    },
-    [modalId],
-  );
-
-  const removeCallback = useCallback(() => {
-    remove(modalId);
-  }, [modalId]);
-
-  const args = {
-    ...props,
-    ...promise,
-    visible,
-    config,
-    hide: hideCallback,
-    remove: removeCallback,
+  return {
+    ModalContext,
+    Provider,
+    create: <
+      P extends ModalProps<P, V> = InnerModalProps,
+      V extends ModalResolveType<P> = ModalResolveType<P>,
+    >(
+      Comp: React.ComponentType<P>,
+    ) => create<P, V>(Comp),
+    show,
+    update,
+    hide,
+    remove,
+    useModal: useManagerModal,
   };
-
-  return Object.freeze(args);
 }
 
-const EasyModalPlaceholder: React.FC = () => {
-  const modals = useContext(ModalContext);
+const EasyModal = createEasyModal();
 
-  const validModals = modals.filter((item) => isValidId(item.id) && MODAL_REGISTRY[item.id]); // ensure component is registered
-
-  const toRender = validModals.map((item) => {
-    return {
-      id: item.id,
-      Component: MODAL_REGISTRY[item.id].Component,
-    };
-  });
-
-  return (
-    <>
-      {toRender.map((item) => (
-        //! Render HOC & Just Inject Id
-        <item.Component key={item.id} id={item.id} />
-      ))}
-    </>
-  );
-};
-
-EasyModalPlaceholder.displayName = 'EasyModalPlaceholder';
-
-const Provider: React.FC<Record<string, any>> = ({ children }) => {
-  const arr = useReducer(reducer, []);
-  const modals = arr[0];
-  // why not write `fnRef.current = fn`? https://github.com/alibaba/hooks/issues/728
-  const fnRef = useRef<innerDispatch>();
-  fnRef.current = useMemo<innerDispatch>(() => {
-    return function innerDispatch<P, V>(action: EasyModalAction<P, V>) {
-      (arr[1] as React.Dispatch<EasyModalAction<P, V>>)(action);
-    };
-  }, [arr]);
-
-  dispatch = fnRef.current;
-
-  return (
-    <ModalContext.Provider value={modals}>
-      {children}
-      <EasyModalPlaceholder />
-    </ModalContext.Provider>
-  );
-};
-
-Provider.displayName = 'EasyModalProvider';
-
-const EasyModal = {
-  ModalContext,
-  Provider,
-  update,
-  create: function _create<P extends ModalProps<P, V> = InnerModalProps, V = ModalResolveType<P>>(
-    Comp: React.ComponentType<P>,
-  ): EasyModalHOC<P, V> {
-    return create<P, V>(Comp);
-  },
-  show,
-  hide,
-  remove,
-};
-
+export const useModal = EasyModal.useModal;
 export default EasyModal;

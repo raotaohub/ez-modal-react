@@ -15,9 +15,11 @@
 
 ## ✨ Feature
 
-1. Based on **Promise**,In addition, there is no need to manage the switch status, which can reduce the tedious status management.
-2. Supports **<a href="#typeinfer" title="">return value type inference</a>**,elevate the development experience.
-3. Small size(~1kb after gzip)、easy access non-intrusive、support any UI library.
+1. Promise-based modal lifecycle without repetitive visibility state.
+2. Type-safe modal props and Promise result inference.
+3. Next.js Pages Router and App Router support with a published `"use client"` boundary.
+4. Provider-scoped stores and isolated manager instances through `createEasyModal()`.
+5. Small, non-intrusive, and UI-library agnostic.
 
 ## 🔨 Documentations
 
@@ -28,11 +30,11 @@
 ## 📦 install
 
 ```shell
-# with yarn
-yarn add ez-modal-react -S
+# 2.0 alpha
+npm install ez-modal-react@2.0.0-alpha.0
 
-# or with npm
-npm install ez-modal-react -S
+# or
+yarn add ez-modal-react@2.0.0-alpha.0
 ```
 
 ## 🚀 Examples
@@ -82,6 +84,66 @@ const res = await EasyModal.show(InfoModal, { age: 10 });
 console.log(res); // modal
 ```
 
+## Next.js
+
+The package entry is a Client Component boundary, so it works with both the Pages Router and App Router. Modal methods are client-only: call `show`, `update`, `hide`, and `remove` from event handlers or effects, not Server Components or Server Actions.
+
+### App Router
+
+```tsx
+// app/providers.tsx
+'use client';
+
+import type { PropsWithChildren } from 'react';
+import EasyModal from 'ez-modal-react';
+
+export function Providers({ children }: PropsWithChildren) {
+  return <EasyModal.Provider>{children}</EasyModal.Provider>;
+}
+```
+
+```tsx
+// app/layout.tsx (Server Component)
+import { Providers } from './providers';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body><Providers>{children}</Providers></body>
+    </html>
+  );
+}
+```
+
+### Pages Router
+
+Wrap `Component` with `EasyModal.Provider` in `pages/_app.tsx`.
+
+## Isolated Managers
+
+The default export remains backward compatible. For multiple roots, micro-frontends, tests, or nested applications, create one manager per Provider:
+
+```tsx
+import { createEasyModal } from 'ez-modal-react';
+
+export const adminModal = createEasyModal();
+
+<adminModal.Provider>
+  <AdminApp />
+</adminModal.Provider>;
+
+adminModal.show(AdminDialog, props);
+```
+
+A modal created by one manager must be shown through that same manager. Mount one Provider per manager for deterministic imperative API routing.
+
+## 2.0 Alpha Migration Notes
+
+- Existing default calls such as `EasyModal.show()` remain supported.
+- Calling an imperative method before its Provider mounts, after it is disposed, or during server rendering now throws a descriptive error instead of targeting stale global state.
+- Pending modal promises reject with `EasyModalProviderUnmountedError` when their Provider is disposed.
+- Use `createEasyModal()` when an application needs more than one Provider.
+
 ## 🔄 Update Modal Props
 
 You can update modal props dynamically using the `update` function:
@@ -99,7 +161,7 @@ EasyModal.update(InfoModal, { name: 'Bob' });
 // Result: { name: 'Bob', age: 25, fileList: ['file1'] }
 ```
 
-### Replace Mode (New in v1.0.5+)
+### Replace Mode (v1.0.6+)
 
 Use `{ merge: false }` to completely replace props:
 

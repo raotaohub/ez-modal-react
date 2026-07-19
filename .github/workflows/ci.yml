@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  legacy-react:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: npm test
+      - run: npm run build
+      - run: npm run verify:package
+
+  modern-react:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        react-version: [18.3.1, 19.2.7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false react@${{ matrix.react-version }} react-dom@${{ matrix.react-version }}
+      - run: npm run test:modern
+
+  next-app-router:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: npm run build
+      - run: npm pack
+      - run: npm install
+        working-directory: fixtures/next-app
+      - run: npm run build
+        working-directory: fixtures/next-app

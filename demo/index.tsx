@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import EasyModal from '../src'; /*  */
-import { Card, Col, Layout, Row, Space } from 'antd';
+import { Card, Layout, Space } from 'antd';
 
 /* import comp */
 import ComplexModal from './antdModal/ComplexModal';

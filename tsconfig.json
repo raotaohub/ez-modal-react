@@ -15,5 +15,6 @@
     "declaration": true,
     "jsx": "react-jsx",
     "types": ["vite/client"]
-  }
+  },
+  "exclude": ["dist", "fixtures", "node_modules"]
 }

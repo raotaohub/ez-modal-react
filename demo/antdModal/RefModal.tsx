@@ -26,7 +26,7 @@ export const ForwardRefComp: React.ForwardRefExoticComponent<IProps> = forwardRe
       </div>
       <div style={{ padding: '10px 0' }}>
         ref:
-        <InputNumber<number> value={input} onChange={(e) => setInput(e)} style={{ width: 180 }} />
+        <InputNumber<number> value={input} onChange={(e) => setInput(e ?? undefined)} style={{ width: 180 }} />
       </div>
       <div>
         <h1>modal</h1>

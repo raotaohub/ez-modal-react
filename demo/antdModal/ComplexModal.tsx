@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, Button, Space, Input, message } from 'antd';
-import EasyModal, { useModal } from '../../src';
+import EasyModal from '../../src';
 import { InnerModalProps } from '../../src/type';
 
 interface Props extends InnerModalProps<string> {
